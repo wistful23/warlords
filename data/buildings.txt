@@ -1,0 +1,41 @@
+BUILDING POS TYPE
+Temple of Iris       7216  Temple
+Seer of the River    3315  Sage
+Temple of Emrik      6285  Temple
+Golden Library        211  Library
+Great Library       12764  Library
+Temple of Miridine  10175  Temple
+Temple of Lurinth   16097  Temple
+Grand Oracle        14602  Sage
+Greyport Ruins       2637  Ruins
+Emperors' Crypt      3713  Crypt
+Harvest Stone        5795  Crypt
+Old Woods Tower      5898  Ruins
+Druids' Temple       2645  Crypt
+Ruins of Kabor       1248  Ruins
+Nirn's Crypt         6257  Crypt
+Nirn's Deep          7784  Ruins
+Mirk's Decay         3979  Ruins
+Wizard's Heart       2031  Crypt
+Dragon Halls         7262  Crypt
+Bridgetower          4545  Ruins
+Crypt of Molok        746  Crypt
+Halls of Chaos       6858  Crypt
+Dragontower Ruins    5536  Ruins
+Nev Dolar            7505  Ruins
+The Old Inn         10807  Ruins
+Throne of Horan     13322  Crypt
+Throne of Balnor    14515  Crypt
+Giant's Tomb        13758  Ruins
+Tower of Death       8862  Ruins
+Ruins of Haviel     12904  Ruins
+Dusk Stone          15839  Crypt
+Dawn Stone          15842  Crypt
+Gemhold             14457  Crypt
+Dark Barrows        11184  Ruins
+Dwarf Halls          8886  Crypt
+Guardian            13266  Ruins
+Tower of Night      11981  Ruins
+Crypt of Baal       13712  Crypt
+Tomb of Naar        12835  Crypt
+Monolyth            13392  Ruins

@@ -1,0 +1,6 @@
+ARMY (Time/Cost/Strength/Movement)
+Dragons  ( 0/ 8/ 8/18)
+Demons   ( 0/ 8/ 7/14)
+Devils   ( 0/ 8/ 8/12)
+Wizards  ( 0/12/ 6/50)
+Undead   ( 0/ 2/ 7/12)

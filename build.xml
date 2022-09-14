@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="warlords" basedir="." default="dist">
+
+    <property name="src.dir" location="src"/>
+    <property name="data.dir" location="data"/>
+    <property name="build.dir" location="build"/>
+    <property name="dist.dir" location="dist"/>
+
+    <target name="clean" description="Remove build directories">
+        <delete dir="${build.dir}"/>
+        <delete dir="${dist.dir}"/>
+    </target>
+
+    <target name="build" description="Compile the sources">
+        <mkdir dir="${build.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${build.dir}" includeantruntime="false" source="8" target="8"/>
+        <copy todir="${build.dir}">
+            <fileset dir="${data.dir}"/>
+        </copy>
+    </target>
+
+    <target name="dist" depends="build" description="Generate the distribution">
+        <jar jarfile="${dist.dir}/${ant.project.name}.jar" basedir="${build.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="com.def.warlords.Main"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="dist" description="Run the application">
+        <java jar="${dist.dir}/${ant.project.name}.jar" fork="true"/>
+    </target>
+
+</project>

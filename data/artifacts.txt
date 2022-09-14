@@ -1,0 +1,15 @@
+ARTIFACT BATTLE COMMAND
+Firesword          1  0
+Icesword           1  0
+Lightsword         2  0
+Darksword          2  0
+Staff of Might     3  0
+Crown of Loriel    0  1
+Sceptre of Loriel  0  1
+Orb of Loriel      0  1
+Ring of Power      0  2
+Staff of Ruling    0  3
+Spear of Ank       1  0
+Bow of Eldros      2  0
+Horn of Ages       0  2
+Crimson Banner     0  1
