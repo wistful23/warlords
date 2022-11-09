@@ -14,7 +14,11 @@ import com.def.warlords.graphics.BitmapFactory;
 import com.def.warlords.graphics.BitmapInfo;
 import com.def.warlords.graphics.Cursor;
 import com.def.warlords.gui.Container;
+import com.def.warlords.sound.Sound;
+import com.def.warlords.sound.SoundFactory;
+import com.def.warlords.sound.SoundInfo;
 import com.def.warlords.util.Logger;
+import com.def.warlords.util.Toggle;
 import com.def.warlords.util.Util;
 
 import javax.swing.JComponent;
@@ -81,7 +85,7 @@ public class MainController extends JComponent implements FormController, MenuCo
     }
 
     public void start() {
-        new DelayEmptyForm(this).activate();
+        new SoundForm(this, SoundInfo.HORN).activate();
         mainBitmap = BitmapFactory.getInstance().transformMainBitmap();
         activeContainer = new SetupContainer(this);
     }
@@ -115,6 +119,14 @@ public class MainController extends JComponent implements FormController, MenuCo
         final Timer timer = new Timer(delay, listener);
         timer.addActionListener(e -> repaint());
         return timer;
+    }
+
+    @Override
+    public Sound createSound(SoundInfo soundInfo, Runnable listener) {
+        return SoundFactory.getInstance().createSound(soundInfo, () -> {
+            repaint();
+            listener.run();
+        });
     }
 
     public void enableActiveContainer() {
@@ -188,7 +200,7 @@ public class MainController extends JComponent implements FormController, MenuCo
     }
 
     public void startGame(List<PlayerParams> playerParams) {
-        new DelayEmptyForm(this).activate();
+        new SoundForm(this, SoundInfo.DRUMROLL).activate();
         final Kingdom kingdom = new Kingdom();
         if (!kingdom.init()) {
             Logger.error("Failed to initialize Kingdom");
@@ -217,11 +229,13 @@ public class MainController extends JComponent implements FormController, MenuCo
     }
 
     @Override
-    public void switchObserveOption() {
+    public Toggle getObserveToggle() {
+        return new Toggle(true);
     }
 
     @Override
-    public void switchSoundOption() {
+    public Toggle getSoundToggle() {
+        return SoundFactory.getInstance().getToggle();
     }
 
     @Override
@@ -601,6 +615,8 @@ public class MainController extends JComponent implements FormController, MenuCo
     @Override
     public void onCityRazed(City city) {
         playingMap.setRazeMode(true);
+        new SoundForm(this, SoundInfo.WAR).activate();
+        // NOTE: W displays the message when playing the sound.
         showMessage("Your troops ravage " + city.getName() + "!");
         showMessage(city.getName() + " is in ruins!");
         playingMap.setRazeMode(false);
@@ -766,6 +782,7 @@ public class MainController extends JComponent implements FormController, MenuCo
 
     public void onAlliesJoined(Hero hero, GuardType guard, int count) {
         playingMap.setSearchMode(PlayingMap.SearchMode.SEARCH);
+        new SoundForm(this, SoundInfo.DRAMATIC).activate();
         if (count > 1) {
             showMessage(count + " " + guard.getName() + "s offer to join " + hero.getName());
         } else {
@@ -776,6 +793,7 @@ public class MainController extends JComponent implements FormController, MenuCo
 
     public void onGuardFight(Hero hero, GuardType guard, boolean slain) {
         playingMap.setSearchMode(PlayingMap.SearchMode.SEARCH);
+        new SoundForm(this, SoundInfo.DRAMATIC).activate();
         showMessage(hero.getName() + " encounters a " + guard.getName() + "!");
         if (slain) {
             // NOTE: W doesn't display a hero under the death icon.
@@ -823,7 +841,7 @@ public class MainController extends JComponent implements FormController, MenuCo
 
     public void onCombat(ArmyList attackingArmies, ArmyList defendingArmies, Tile tile, List<Boolean> protocol) {
         playingMap.setCombatTile(tile);
-        new DelayEmptyForm(this).activate();
+        new SoundForm(this, SoundInfo.WAR).activate();
         infoScreen.setVisible(false);
         new CombatForm(this, game.getKingdom(), attackingArmies, defendingArmies, tile, protocol).activate();
         playingMap.setCombatTile(null);

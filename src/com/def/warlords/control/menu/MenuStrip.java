@@ -20,15 +20,13 @@ public class MenuStrip extends MenuBar {
         aboutMenu.addMenuItem("About Warlords", "?", KeyEvent.VK_SLASH, source -> controller.about());
         // Game menu.
         final Menu gameMenu = addMenu(48, "Game", 4, 158);
-        gameMenu.addMenuItem("Observe Off", "alt O", KeyEvent.VK_O, KeyEvent.ALT_DOWN_MASK,
-                source -> controller.switchObserveOption());
-        gameMenu.addMenuItem("Sound Off", "alt M", KeyEvent.VK_M, KeyEvent.ALT_DOWN_MASK, source ->
-                controller.switchSoundOption());
+        gameMenu.addMenuItem("Observe", "alt O", KeyEvent.VK_O, KeyEvent.ALT_DOWN_MASK, controller.getObserveToggle());
+        gameMenu.addMenuItem("Sound", "alt M", KeyEvent.VK_M, KeyEvent.ALT_DOWN_MASK, controller.getSoundToggle());
         gameMenu.addDivider();
-        gameMenu.addMenuItem("Save Game", "alt S", KeyEvent.VK_S, KeyEvent.ALT_DOWN_MASK, source ->
-                controller.saveGame());
-        gameMenu.addMenuItem("Load Game", "alt L", KeyEvent.VK_L, KeyEvent.ALT_DOWN_MASK, source ->
-                controller.loadGame());
+        gameMenu.addMenuItem("Save Game", "alt S", KeyEvent.VK_S, KeyEvent.ALT_DOWN_MASK,
+                source -> controller.saveGame());
+        gameMenu.addMenuItem("Load Game", "alt L", KeyEvent.VK_L, KeyEvent.ALT_DOWN_MASK,
+                source -> controller.loadGame());
         gameMenu.addDivider();
         gameMenu.addMenuItem("Quit", "^ Q  ", KeyEvent.VK_Q, KeyEvent.CTRL_DOWN_MASK, source -> controller.quit());
         // Orders menu.

@@ -3,6 +3,7 @@ package com.def.warlords.gui;
 import com.def.warlords.graphics.Font;
 import com.def.warlords.graphics.FontFactory;
 import com.def.warlords.graphics.Palette;
+import com.def.warlords.util.Toggle;
 
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
@@ -26,6 +27,7 @@ public class Menu extends Container {
             g.fillRect(x + 1, y, width - 2, height);
         }
     }
+
     private final String text;
     private final int margin, dropWidth;
     private int bottom;
@@ -43,7 +45,16 @@ public class Menu extends Container {
     }
 
     public void addMenuItem(String text, String hint, int keyCode, int keyModifier, MenuItem.Listener listener) {
-        add(new MenuItem(x, bottom + 2, dropWidth, height, text, hint, keyCode, keyModifier, listener));
+        addMenuItem(text, hint, keyCode, keyModifier, null, listener);
+    }
+
+    public void addMenuItem(String text, String hint, int keyCode, int keyModifier, Toggle toggle) {
+        addMenuItem(text, hint, keyCode, keyModifier, toggle, null);
+    }
+
+    public void addMenuItem(String text, String hint, int keyCode, int keyModifier,
+                            Toggle toggle, MenuItem.Listener listener) {
+        add(new MenuItem(x, bottom + 2, dropWidth, height, text, hint, keyCode, keyModifier, toggle, listener));
         bottom += height + 2;
     }
 

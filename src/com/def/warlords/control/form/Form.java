@@ -1,6 +1,8 @@
 package com.def.warlords.control.form;
 
 import com.def.warlords.gui.Container;
+import com.def.warlords.sound.Sound;
+import com.def.warlords.sound.SoundInfo;
 
 import javax.swing.Timer;
 import java.awt.event.ActionListener;
@@ -32,6 +34,10 @@ public class Form extends Container {
 
     Timer createTimer(int delay, ActionListener listener) {
         return controller.createTimer(delay, listener);
+    }
+
+    Sound createSound(SoundInfo soundInfo, Runnable listener) {
+        return controller.createSound(soundInfo, listener);
     }
 
     void reset() {

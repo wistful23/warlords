@@ -1,5 +1,7 @@
 package com.def.warlords.control.menu;
 
+import com.def.warlords.util.Toggle;
+
 /**
  * @author wistful23
  * @version 1.23
@@ -10,8 +12,8 @@ public interface MenuController {
     void about();
 
     // Game.
-    void switchObserveOption();
-    void switchSoundOption();
+    Toggle getObserveToggle();
+    Toggle getSoundToggle();
 
     void saveGame();
     void loadGame();
