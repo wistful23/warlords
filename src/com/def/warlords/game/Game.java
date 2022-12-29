@@ -39,22 +39,22 @@ public class Game implements Record {
     private Kingdom kingdom;
     private final List<Player> players = new ArrayList<>(MAX_PLAYER_COUNT);
 
-    private GameController controller;
+    private PlayerController humanController, computerController;
+    private PlayerController controller;
 
     private int currentPlayerIndex = -1;
     private int currentTurnCount;
     // NOTE: Currently this AI option is unused.
     private boolean intenseCombat;
 
+    // Non-recordable.
+    private boolean computerMode;
+
     public Game() {
     }
 
     public Game(Kingdom kingdom) {
         this.kingdom = kingdom;
-    }
-
-    public void setGameController(GameController controller) {
-        this.controller = controller;
     }
 
     public Kingdom getKingdom() {
@@ -96,8 +96,31 @@ public class Game implements Record {
         this.intenseCombat = intenseCombat;
     }
 
-    public void nextPlayer() {
+    public void setControllers(PlayerController humanController, PlayerController computerController) {
+        this.humanController = humanController;
+        this.computerController = computerController;
+    }
+
+    public boolean isComputerTurn() {
+        return controller != null && controller == computerController;
+    }
+
+    public boolean isComputerMode() {
+        return computerMode;
+    }
+
+    public void stopComputerMode() {
+        players.stream().filter(Util.not(Player::isDestroyed)).forEach(player -> player.setLevel(PlayerLevel.HUMAN));
+    }
+
+    public void nextPlayer(GameController gameController) {
         // NOTE: W supports the surrender.
+        if (computerMode == isAnyHumanPlayerActive()) {
+            computerMode = !computerMode;
+            if (computerMode && currentTurnCount > 0) {
+                gameController.onComputerModeTurned();
+            }
+        }
         final int prevPlayerIndex = currentPlayerIndex;
         Player currentPlayer;
         boolean turnChanged = false;
@@ -111,27 +134,44 @@ public class Game implements Record {
                 currentPlayer.destroy();
                 playerDestroyed = true;
                 // NOTE: W reports destroyed players before first player turn.
-                controller.onPlayerDestroyed(currentPlayer);
+                gameController.onPlayerDestroyed(currentPlayer);
             }
             if (currentPlayerIndex == 0) {
                 if (turnChanged) {
-                    controller.onAllPlayersDestroyed();
+                    gameController.onAllPlayersDestroyed();
                     return;
                 }
                 turnChanged = true;
                 ++currentTurnCount;
             }
-            // NOTE: Currently skip all AI players.
-        } while (currentPlayer.isDestroyed() || !currentPlayer.isHuman());
-        if (playerDestroyed && currentPlayerIndex == prevPlayerIndex) {
-            // NOTE: W stops producing armies in all cities.
-            controller.onVictory(currentPlayerIndex, currentPlayer);
+        } while (currentPlayer.isDestroyed());
+        Util.assertFalse(currentPlayer.isDestroyed());
+        final boolean lastPlayerLeft = currentPlayerIndex == prevPlayerIndex;
+        if (!computerMode && playerDestroyed) {
+            if (lastPlayerLeft && currentPlayer.isHuman()) {
+                // NOTE: W stops producing armies in all cities.
+                gameController.onVictory(currentPlayerIndex, currentPlayer);
+            } else if (!isAnyHumanPlayerActive()) {
+                // NOTE: W calls this every turn after all the human players are destroyed.
+                gameController.onAllHumanPlayersDestroyed();
+                computerMode = true;
+            }
         }
+        if (lastPlayerLeft && !currentPlayer.isHuman()) {
+            // The last player can't be computer.
+            currentPlayer.setLevel(PlayerLevel.HUMAN);
+            computerMode = false;
+        }
+        controller = currentPlayer.isHuman() ? humanController : computerController;
         if (currentTurnCount == 1) {
             currentPlayer.start(controller);
         } else {
             currentPlayer.turn(controller);
         }
+    }
+
+    private boolean isAnyHumanPlayerActive() {
+        return players.stream().filter(Util.not(Player::isDestroyed)).anyMatch(Player::isHuman);
     }
 
     public void build(ArmySelection selection) {
@@ -149,36 +189,36 @@ public class Game implements Record {
 
     private void improveCityDefence(City city) {
         if (city.getDefence() >= City.MAX_DEFENCE) {
-            controller.onImproveCityDefenceStatus(GameController.BuildStatus.PROHIBITED);
+            controller.onImproveCityDefenceStatus(PlayerController.BuildStatus.PROHIBITED);
             return;
         }
         final Empire empire = city.getEmpire();
         final int defencePrice = city.getDefencePrice();
         if (empire.getGold() < defencePrice) {
-            controller.onImproveCityDefenceStatus(GameController.BuildStatus.NOT_ENOUGH_GOLD);
+            controller.onImproveCityDefenceStatus(PlayerController.BuildStatus.NOT_ENOUGH_GOLD);
             return;
         }
         if (controller.isImproveCityDefenceApproved(city)) {
             Util.assertTrue(empire.pay(defencePrice));
             city.increaseDefence();
-            controller.onImproveCityDefenceStatus(GameController.BuildStatus.COMPLETED);
+            controller.onImproveCityDefenceStatus(PlayerController.BuildStatus.COMPLETED);
         }
     }
 
     private void buildTower(Tile tile) {
         if (tile.getTerrain() != TerrainType.PLAIN || tile.getBuilding() != null) {
-            controller.onBuildTowerStatus(GameController.BuildStatus.PROHIBITED);
+            controller.onBuildTowerStatus(PlayerController.BuildStatus.PROHIBITED);
             return;
         }
         final Empire empire = tile.getGroup().getEmpire();
         if (empire.getGold() < TOWER_PRICE) {
-            controller.onBuildTowerStatus(GameController.BuildStatus.NOT_ENOUGH_GOLD);
+            controller.onBuildTowerStatus(PlayerController.BuildStatus.NOT_ENOUGH_GOLD);
             return;
         }
         if (controller.isBuildTowerApproved()) {
             Util.assertTrue(empire.pay(TOWER_PRICE));
             tile.buildTower(empire);
-            controller.onBuildTowerStatus(GameController.BuildStatus.COMPLETED);
+            controller.onBuildTowerStatus(PlayerController.BuildStatus.COMPLETED);
         }
     }
 
@@ -501,9 +541,8 @@ public class Game implements Record {
                 }
                 Logger.info("AR=" + attackingRoll + " DR=" + defendingRoll + " " + resultLog);
             }
-            Logger.info((defendingArmyHealth > 0
-                    ? attackingArmies.get(attackingArmyIndex - 1).getName()
-                    : defendingArmies.get(defendingArmyIndex - 1).getName()) + " KILLED");
+            Logger.info((defendingArmyHealth > 0 ? attackingArmies.get(attackingArmyIndex - 1).getName()
+                                                 : defendingArmies.get(defendingArmyIndex - 1).getName()) + " KILLED");
             combatProtocol.add(attackingArmyHealth > 0);
         }
         controller.onCombat(attackingArmies, defendingArmies, tile, combatProtocol);

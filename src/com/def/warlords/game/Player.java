@@ -110,6 +110,7 @@ public class Player implements Record {
         }
         Util.assertNotNull(capital.hireHero(heroName, false));
         controller.selectProduction(capital);
+        controller.playTurn();
     }
 
     public void turn(TurnController controller) {
@@ -145,6 +146,7 @@ public class Player implements Record {
                 controller.reportProductionFailure(city);
             }
         }
+        controller.playTurn();
     }
 
     private void hireHero(TurnController controller) {

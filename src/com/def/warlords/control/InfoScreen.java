@@ -1,5 +1,6 @@
 package com.def.warlords.control;
 
+import com.def.warlords.control.common.Dimensions;
 import com.def.warlords.game.ArmySelection;
 import com.def.warlords.game.Game;
 import com.def.warlords.game.model.*;
@@ -25,8 +26,15 @@ public class InfoScreen extends Container {
     @Override
     public void paint(Graphics g) {
         // NOTE: W doesn't support dynamic updates.
+        final Font font = FontFactory.getInstance().getGothicFont();
         final Game game = controller.getGame();
-        final Empire empire = game.getCurrentPlayer().getEmpire();
+        if (game.isComputerTurn()) {
+            final EmpireType empireType = game.getCurrentPlayer().getEmpireType();
+            final boolean singular = empireType == EmpireType.ELVALLIE || empireType == EmpireType.LORD_BANE;
+            final String text = empireType.getName() + (singular ? " is" : " are") + " moving!";
+            font.drawString(g, (Dimensions.SCREEN_WIDTH - font.getLength(text) + 1) / 2, 356, text);
+            return;
+        }
         Command command = Command.NONE;
         final Tile tile = controller.getPlayingMap().getSelectedTile();
         final ArmySelection selection = controller.getPlayingMap().getArmySelection();
@@ -35,7 +43,7 @@ public class InfoScreen extends Container {
         } else if (!selection.isEmpty()) {
             command = Command.MOVE;
         }
-        final Font font = FontFactory.getInstance().getGothicFont();
+        final Empire empire = game.getCurrentPlayer().getEmpire();
         font.drawString(g, 81, 336, "Name:");
         font.drawString(g, 143, 336, empire.getType().getName());
         font.drawString(g, 410, 336, "Command:");
@@ -71,8 +79,8 @@ public class InfoScreen extends Container {
                         font.drawString(g, 143, 356, building.getName());
                         font.drawString(g, 416, 356, "Status:");
                         font.drawString(g, 483, 356,
-                                building.isCrypt() ? building.isExplored() ? "Explored" : "Unexplored" :
-                                        building.getType().getName());
+                                building.isCrypt() ? building.isExplored() ? "Explored" : "Unexplored"
+                                                   : building.getType().getName());
                     } else {
                         font.drawString(g, 65, 356, "Terrain:");
                         font.drawString(g, 143, 356, tile.getTerrain().getName());

@@ -8,15 +8,15 @@ import com.def.warlords.game.model.City;
  */
 public interface TurnController {
 
-    // Called every turn.
+    // Called every turn at the very beginning.
     void beginTurn();
+
+    // Called every turn after all reports have been finished.
+    void playTurn();
 
     // Called on the first turn only.
     // Returns a hero name.
     String getFirstHeroName(City city, String initialName);
-
-    // Called on the first turn only for the capital city.
-    void selectProduction(City city);
 
     // Called when a hero offer occurs in the middle of the game.
     // Returns a hero name or null if the hero offer is not accepted.
@@ -38,12 +38,6 @@ public interface TurnController {
     // Called when there is not enough gold for producing.
     void reportNoGoldForProducing();
 
-    // Called when the player is destroyed.
-    void onPlayerDestroyed(Player player);
-
-    // Called when all the players are destroyed.
-    void onAllPlayersDestroyed();
-
-    // Called when the player destroyed all opponents.
-    void onVictory(int playerIndex, Player player);
+    // Called on the first turn only for the capital city.
+    void selectProduction(City city);
 }

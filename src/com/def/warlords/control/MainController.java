@@ -4,10 +4,7 @@ import com.def.warlords.control.common.GameHelper;
 import com.def.warlords.control.form.*;
 import com.def.warlords.control.menu.MenuController;
 import com.def.warlords.control.menu.MenuStrip;
-import com.def.warlords.game.ArmySelection;
-import com.def.warlords.game.Game;
-import com.def.warlords.game.GameController;
-import com.def.warlords.game.Player;
+import com.def.warlords.game.*;
 import com.def.warlords.game.model.*;
 import com.def.warlords.graphics.Bitmap;
 import com.def.warlords.graphics.BitmapFactory;
@@ -37,7 +34,8 @@ import static com.def.warlords.control.common.Dimensions.*;
  * @author wistful23
  * @version 1.23
  */
-public class MainController extends JComponent implements FormController, MenuController, GameController {
+public class MainController extends JComponent
+        implements FormController, MenuController, GameController, PlayerController {
 
     private final DeveloperController developerController = new DeveloperController(this);
 
@@ -63,6 +61,8 @@ public class MainController extends JComponent implements FormController, MenuCo
     private final ProductionScreen productionScreen = new ProductionScreen(this);
     private final CommandBar commandBar = new CommandBar(this);
     private final MenuStrip menuStrip = new MenuStrip(this);
+
+    private final ComputerController computerController = new ComputerController(this);
 
     private Game game;
 
@@ -143,12 +143,20 @@ public class MainController extends JComponent implements FormController, MenuCo
         activeContainer.setEnabled(false);
     }
 
-    void showMessage(String text) {
+    public void showMessage(String text) {
+        showMessage(text, false);
+    }
+
+    public void showMessage(String text, boolean timed) {
         if (!infoScreen.isVisible()) {
             throw new IllegalStateException("Info Screen has to be visible");
         }
         infoScreen.setVisible(false);
-        new MessageForm(this, text).activate();
+        if (timed) {
+            new TimedMessageForm(this, text).activate();
+        } else {
+            new MessageForm(this, text).activate();
+        }
         infoScreen.setVisible(true);
     }
 
@@ -207,12 +215,12 @@ public class MainController extends JComponent implements FormController, MenuCo
             return;
         }
         game = new Game(kingdom);
-        game.setGameController(this);
+        game.setControllers(this, computerController);
         for (final PlayerParams params : playerParams) {
             game.addPlayer(params.getEmpireType(), params.getLevel());
         }
         activeContainer = mainContainer;
-        game.nextPlayer();
+        game.nextPlayer(this);
     }
 
     // Command Bar Controller.
@@ -263,7 +271,7 @@ public class MainController extends JComponent implements FormController, MenuCo
         playingMap.reset();
         playingMap.setPos(recordData.getPosX(), recordData.getPosY());
         game = recordData.getGame();
-        game.setGameController(this);
+        game.setControllers(this, computerController);
         currentRecordIndex = index;
         // Ensure the main container is active.
         activeContainer = mainContainer;
@@ -433,10 +441,51 @@ public class MainController extends JComponent implements FormController, MenuCo
     @Override
     public void endTurn() {
         playingMap.reset();
-        game.nextPlayer();
+        game.nextPlayer(this);
     }
 
     // Game Controller.
+    @Override
+    public void onComputerModeTurned() {
+        showMessage("And so the war continues...");
+        showMessage("...without you!");
+    }
+
+    @Override
+    public void onPlayerDestroyed(Player player) {
+        if (player.isHuman()) {
+            showMessage("Wretched  " + player.getEmpireType().getName() + "!  For you, the war is over!");
+        } else {
+            showMessage(player.getEmpireType().getName() + " are no longer a threat!", true);
+        }
+    }
+
+    @Override
+    public void onAllPlayersDestroyed() {
+        showMessage("As no players are involved in the..");
+        showMessage("game I bid you a fond 'FAREWELL' ...");
+        showMessage("Hit any key to return to DOS.");
+        System.exit(0);
+    }
+
+    @Override
+    public void onAllHumanPlayersDestroyed() {
+        showMessage("As no further human resistance is ...");
+        showMessage("possible the battle for Illuria ...");
+        showMessage("will continue without you ...");
+        showMessage("Hit 'ESC' to stop the war and ...");
+        showMessage("visit the sites of your old battles.");
+    }
+
+    @Override
+    public void onVictory(int playerIndex, Player player) {
+        // NOTE: W plays the horn sound.
+        showMessage("Player " + (playerIndex + 1) + ", " + player.getEmpireType().getName() + ": You have won!");
+        showMessage("You now rule all of Illuria ...");
+        showMessage("You may now inspect your domain.");
+    }
+
+    // Player Controller.
     @Override
     public void beginTurn() {
         endDeliveryReport = false;
@@ -447,6 +496,10 @@ public class MainController extends JComponent implements FormController, MenuCo
         if (player.getGold() == 0) {
             showMessage("Your treasuries are exhausted!");
         }
+    }
+
+    @Override
+    public void playTurn() {
     }
 
     @Override
@@ -538,27 +591,6 @@ public class MainController extends JComponent implements FormController, MenuCo
         }
         // NOTE: W displays the empty Strategic Map.
         showMessage("You do not have enough gold!");
-    }
-
-    @Override
-    public void onPlayerDestroyed(Player player) {
-        showMessage("Wretched  " + player.getEmpireType().getName() + "!  For you, the war is over!");
-    }
-
-    @Override
-    public void onAllPlayersDestroyed() {
-        showMessage("As no players are involved in the..");
-        showMessage("game I bid you a fond 'FAREWELL' ...");
-        showMessage("Hit any key to return to DOS.");
-        System.exit(0);
-    }
-
-    @Override
-    public void onVictory(int playerIndex, Player player) {
-        // NOTE: W plays the horn sound.
-        showMessage("Player " + (playerIndex + 1) + ", " + player.getEmpireType().getName() + ": You have won!");
-        showMessage("You now rule all of Illuria ...");
-        showMessage("You may now inspect your domain.");
     }
 
     @Override
@@ -891,6 +923,9 @@ public class MainController extends JComponent implements FormController, MenuCo
         public void keyPressed(KeyEvent e) {
             repaint();
             if (developerController.processKeyEvent(e)) {
+                return;
+            }
+            if (computerController.processKeyEvent(e)) {
                 return;
             }
             if (activeForm != null) {

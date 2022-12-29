@@ -57,7 +57,7 @@ public class DeveloperController {
             return true;
         }
         final Game game = controller.getGame();
-        if (game == null) {
+        if (game == null || game.isComputerTurn()) {
             return true;
         }
         final PlayingMap playingMap = controller.getPlayingMap();
