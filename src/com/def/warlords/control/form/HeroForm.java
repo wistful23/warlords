@@ -45,8 +45,7 @@ public class HeroForm extends Form {
         // Name.
         add(new GreenLabel(140, 48, 157, currentHero.getName()));
         // Location.
-        final City city =
-                GameHelper.getNearest(kingdom.getCities(), currentHero.getPosX(), currentHero.getPosY(), false);
+        final City city = GameHelper.getNearest(kingdom.getCities(), currentHero);
         add(new Label(96, 78, 40, font, Label.Alignment.RIGHT,
                 city.getEmpire() != null && city.getArmies().contains(currentHero) ? "In" : "Near"));
         add(new GreenLabel(140, 74, 157, city.getName()));
@@ -81,9 +80,8 @@ public class HeroForm extends Form {
         // NOTE: W sorts the artifacts.
         add(new ItemList<>(125, 190, 189, 78, 3, currentHero.getArtifacts(), Artifact::getName,
                 add(new TextButton(71, 186, " Up ")), add(new TextButton(66, 242, "Down")),
-                artifact -> bonusLabel.setText(artifact.getBattle() > 0
-                        ? "Bat +\t" + artifact.getBattle()
-                        : "Com +\t" + artifact.getCommand())));
+                artifact -> bonusLabel.setText(artifact.getBattle() > 0 ? "Bat +\t" + artifact.getBattle()
+                                                                        : "Com +\t" + artifact.getCommand())));
         // Hero number.
         add(new Frame(63, 274, 46, 22, Frame.Type.GRAY));
         add(new Label(67, 278, font, heroes.indexOf(currentHero) + 1 + "\tof\t" + heroes.size()));

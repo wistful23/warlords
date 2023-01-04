@@ -14,6 +14,10 @@ public final class GameHelper {
 
     private static final int LIMIT = 5;
 
+    public static <E extends Locatable> E getNearest(List<E> list, Locatable locatable) {
+        return getNearest(list, locatable.getPosX(), locatable.getPosY(), false);
+    }
+
     public static <E extends Locatable> E getNearest(List<E> list, int x, int y, boolean limited) {
         final Stream<E> stream = limited ? list.stream().filter(e -> dist(e, x, y) <= LIMIT) : list.stream();
         return stream.min(Comparator.comparing(e -> dist(e, x, y))).orElse(null);

@@ -791,11 +791,11 @@ public class MainController extends JComponent
             final Tile tile = artifact.getTile();
             final Crypt crypt = artifact.getCrypt();
             if (hero != null) {
-                final City city = GameHelper.getNearest(kingdom.getCities(), hero.getPosX(), hero.getPosY(), false);
+                final City city = GameHelper.getNearest(kingdom.getCities(), hero);
                 showMessage(
                         "... near " + city.getName() + " with a hero of the " + hero.getEmpire().getType().getName());
             } else if (tile != null) {
-                final City city = GameHelper.getNearest(kingdom.getCities(), tile.getPosX(), tile.getPosY(), false);
+                final City city = GameHelper.getNearest(kingdom.getCities(), tile);
                 // Razed city is NEUTRAL.
                 final EmpireType empireType =
                         city.getEmpire() != null ? city.getEmpire().getType() : EmpireType.NEUTRAL;
