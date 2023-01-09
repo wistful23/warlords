@@ -97,7 +97,7 @@ public class Game implements Record {
     }
 
     public void setControllers(PlayerController humanController, PlayerController computerController) {
-        this.humanController = humanController;
+        this.humanController = controller = humanController;
         this.computerController = computerController;
     }
 
