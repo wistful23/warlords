@@ -1,10 +1,12 @@
 package com.def.warlords.control;
 
 import com.def.warlords.control.common.GameHelper;
+import com.def.warlords.game.Computer;
 import com.def.warlords.game.Game;
 import com.def.warlords.game.model.*;
 import com.def.warlords.util.DeveloperMode;
 import com.def.warlords.util.Logger;
+import com.def.warlords.util.Util;
 
 import javax.imageio.ImageIO;
 import java.awt.event.KeyEvent;
@@ -105,6 +107,21 @@ public class DeveloperController {
                 final Army army = city.getFactory(factoryIndex).produce();
                 DeveloperHelper.locateArmy(empire, city, army);
             }
+        }
+        final Computer computer = new Computer(game);
+        // Move the selection by the computer.
+        if (keyCode == KeyEvent.VK_M) {
+            final Tile target = computer.findTarget(playingMap.getArmySelection());
+            if (target != null) {
+                Util.assertTrue(playingMap.moveArmySelection(target, false, null));
+            } else {
+                Logger.info("No move is proposed");
+            }
+        }
+        // Select production by the computer.
+        if (keyCode == KeyEvent.VK_P) {
+            computer.selectProduction(game.getCurrentPlayer().getCities());
+            Logger.info("Selected production");
         }
         return true;
     }

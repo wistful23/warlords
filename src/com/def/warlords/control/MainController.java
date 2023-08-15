@@ -136,11 +136,12 @@ public class MainController extends JComponent
         activeContainer.setEnabled(true);
     }
 
-    public void disableActiveContainer() {
+    public boolean disableActiveContainer() {
         if (!activeContainer.isEnabled()) {
-            throw new IllegalStateException("Active container is already disabled");
+            return false;
         }
         activeContainer.setEnabled(false);
+        return true;
     }
 
     public void showMessage(String text) {

@@ -13,6 +13,7 @@ import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.Queue;
+import java.util.function.Consumer;
 
 import static com.def.warlords.control.common.Dimensions.*;
 
@@ -135,13 +136,14 @@ public class PlayingMap extends Component {
         center(selection.getSelectedGroup().getPosX(), selection.getSelectedGroup().getPosY());
     }
 
-    public void nextArmyGroup(Army.State armyState) {
-        if (!selection.isEmpty()) {
-            selection.getSelectedArmies().updateState(armyState);
-        } else if (armyState == Army.State.DEFENDED) {
+    public void updateArmySelection(Army.State state) {
+        if (selection.isEmpty()) {
             return;
         }
-        final ArmyGroup group = controller.getGame().getCurrentPlayer().nextArmyGroup();
+        selection.getSelectedArmies().updateState(state);
+    }
+
+    public void selectArmyGroup(ArmyGroup group) {
         if (group == null) {
             selection.reset();
             return;
@@ -150,6 +152,37 @@ public class PlayingMap extends Component {
         startArmyFrameAnimation();
         selection.selectAll(group);
         centerArmySelection();
+    }
+
+    public void nextArmyGroup(Army.State prevArmyState) {
+        if (selection.isEmpty() && prevArmyState == Army.State.DEFENDED) {
+            return;
+        }
+        updateArmySelection(prevArmyState);
+        selectArmyGroup(controller.getGame().getCurrentPlayer().nextArmyGroup());
+    }
+
+    public boolean moveArmySelection(Tile tile, boolean respectEnemies, Consumer<Boolean> callback) {
+        if (selection.isEmpty() || selection.getSelectedGroup() == tile.getGroup()) {
+            return false;
+        }
+        final Queue<Tile> path = controller.getGame().findPath(selection, tile, respectEnemies);
+        if (path == null) {
+            return false;
+        }
+        final boolean disabled = controller.disableActiveContainer();
+        controller.createTimer(DELAY_ANIMATION, actionEvent -> {
+            if (path.isEmpty() || !move(path.remove())) {
+                ((Timer) actionEvent.getSource()).stop();
+                if (disabled) {
+                    controller.enableActiveContainer();
+                }
+                if (callback != null) {
+                    callback.accept(path.isEmpty());
+                }
+            }
+        }).start();
+        return true;
     }
 
     public void reset() {
@@ -358,17 +391,8 @@ public class PlayingMap extends Component {
         if (!selection.isEmpty() && selection.getSelectedGroup() != group) {
             if (kingdom.getNeighborTiles(selection.getSelectedGroup().getTile(), false).contains(tile)) {
                 move(tile);
-                return;
-            }
-            final Queue<Tile> path = game.findPath(selection, tile);
-            if (path != null) {
-                controller.disableActiveContainer();
-                controller.createTimer(DELAY_ANIMATION, actionEvent -> {
-                    if (path.isEmpty() || !move(path.remove())) {
-                        ((Timer) actionEvent.getSource()).stop();
-                        controller.enableActiveContainer();
-                    }
-                }).start();
+            } else {
+                moveArmySelection(tile, true, null);
             }
             return;
         }
@@ -381,7 +405,7 @@ public class PlayingMap extends Component {
             } else {
                 selection.select(group);
             }
-            selection.getSelectedArmies().updateState(Army.State.ACTIVE);
+            updateArmySelection(Army.State.ACTIVE);
             return;
         }
         // Info.

@@ -60,6 +60,10 @@ public class City implements Record, Locatable, Comparable<City> {
         return name;
     }
 
+    public Tile getMainTile() {
+        return mainTile;
+    }
+
     public int getDefence() {
         return defence;
     }
@@ -97,6 +101,10 @@ public class City implements Record, Locatable, Comparable<City> {
         return empire;
     }
 
+    public boolean isNeutral() {
+        return empire != null && empire.isNeutral();
+    }
+
     public City getTargetCity() {
         return targetCity;
     }
@@ -113,6 +121,10 @@ public class City implements Record, Locatable, Comparable<City> {
         return factories.get(index);
     }
 
+    public List<ArmyFactory> getFactories() {
+        return new ArrayList<>(factories);
+    }
+
     public int getSourceCityCount() {
         return sourceCities.size();
     }
@@ -126,13 +138,12 @@ public class City implements Record, Locatable, Comparable<City> {
     }
 
     // Occupation.
+    public int getArmyCount() {
+        return tiles.stream().mapToInt(Tile::getArmyCount).sum();
+    }
+
     public boolean isFull() {
-        for (final Tile tile : tiles) {
-            if (!tile.isFull()) {
-                return false;
-            }
-        }
-        return true;
+        return tiles.stream().allMatch(Tile::isFull);
     }
 
     public boolean isPortFull() {
@@ -148,14 +159,14 @@ public class City implements Record, Locatable, Comparable<City> {
             throw new IllegalStateException("City is not registered in an empire");
         }
         // Capacity can be up to MAX_ARMY_COUNT * MAX_TILE_COUNT.
-        final ArmyList armyList = new ArmyList(ArmyGroup.MAX_ARMY_COUNT, empire);
+        final ArmyList armies = new ArmyList(ArmyGroup.MAX_ARMY_COUNT, empire);
         for (final Tile tile : tiles) {
             final ArmyGroup tileGroup = tile.getGroup();
             if (tileGroup != null) {
-                armyList.addAll(tileGroup.getArmies());
+                armies.addAll(tileGroup.getArmies());
             }
         }
-        return armyList;
+        return armies;
     }
 
     // Producing.

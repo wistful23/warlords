@@ -22,6 +22,9 @@ public class Game implements Record {
 
     private static final int ATTACK_MOVEMENT_COST = 2;
     private static final int SEARCH_MOVEMENT_COST = 4;
+    private static final int UNWANTED_MOVEMENT_COST = 7;
+
+    private static final int MAX_MOVEMENT_COST_DELTA = 12;
 
     private static final int MAX_CRYPT_ALLY_COUNT = 2;
 
@@ -342,28 +345,30 @@ public class Game implements Record {
     }
 
     // Finds and returns a path to `target` tile.
-    public Queue<Tile> findPath(ArmySelection selection, Tile target) {
+    public Queue<Tile> findPath(ArmySelection selection, Tile target, boolean respectEnemies) {
         if (selection.isEmpty()) {
             return null;
         }
         final ArmyList armies = selection.getSelectedArmies();
-        if (armies.getMovementCost(target.getTerrain()) == ArmyType.FORBIDDEN_MOVEMENT_COST ||
-                target.isOccupiedByEnemy(armies.getEmpire())) {
+        if (armies.getMovementCost(target.getTerrain()) == ArmyType.FORBIDDEN_MOVEMENT_COST) {
+            return null;
+        }
+        if (respectEnemies && target.isOccupiedByEnemy(armies.getEmpire())) {
             return null;
         }
         final Tile source = selection.getSelectedGroup().getTile();
-        final Map<Tile, Integer> valuesIgnoreGroups = findPath(armies, source, target, true);
-        if (!valuesIgnoreGroups.containsKey(target)) {
+        final Map<Tile, Integer> valuesIgnoredFriends = findPath(armies, source, target, respectEnemies, false);
+        if (!valuesIgnoredFriends.containsKey(target)) {
             return null;
         }
-        Map<Tile, Integer> values = valuesIgnoreGroups;
-        final Map<Tile, Integer> valuesRespectGroups = findPath(armies, source, target, false);
-        if (valuesRespectGroups.containsKey(target)) {
-            final int movementCostRespectGroups = valuesRespectGroups.get(target) >> INDEX_SHIFT;
-            final int movementCostIgnoreGroups = valuesIgnoreGroups.get(target) >> INDEX_SHIFT;
-            Util.assertTrue(movementCostRespectGroups >= movementCostIgnoreGroups);
-            if (movementCostRespectGroups == movementCostIgnoreGroups) {
-                values = valuesRespectGroups;
+        Map<Tile, Integer> values = valuesIgnoredFriends;
+        final Map<Tile, Integer> valuesRespectedFriends = findPath(armies, source, target, respectEnemies, true);
+        if (valuesRespectedFriends.containsKey(target)) {
+            final int movementCostRespectedFriends = valuesRespectedFriends.get(target) >> INDEX_SHIFT;
+            final int movementCostIgnoredFriends = valuesIgnoredFriends.get(target) >> INDEX_SHIFT;
+            Util.assertTrue(movementCostRespectedFriends >= movementCostIgnoredFriends);
+            if (movementCostRespectedFriends - movementCostIgnoredFriends <= MAX_MOVEMENT_COST_DELTA) {
+                values = valuesRespectedFriends;
             }
         }
         final Deque<Tile> path = new ArrayDeque<>();
@@ -457,8 +462,9 @@ public class Game implements Record {
         }
     }
 
-    // Finds the shortest path to `target` tile. Ignores friendly groups if `ignoreGroups` is true.
-    private Map<Tile, Integer> findPath(ArmyList armies, Tile source, Tile target, boolean ignoreGroups) {
+    // Finds the shortest path to `target` tile.
+    private Map<Tile, Integer> findPath(ArmyList armies, Tile source, Tile target,
+                                        boolean respectEnemies, boolean respectFriends) {
         final Map<Tile, Integer> values = new HashMap<>();
         final Queue<Tile> queue = new PriorityQueue<>(Comparator.comparing(values::get));
         values.put(source, 0);
@@ -468,16 +474,27 @@ public class Game implements Record {
             final List<Tile> neighborTiles = kingdom.getNeighborTiles(from, false);
             for (int index = 0; index < neighborTiles.size(); ++index) {
                 final Tile to = neighborTiles.get(index);
-                final int movementCost = armies.getMovementCost(to.getTerrain());
-                if (movementCost == ArmyType.FORBIDDEN_MOVEMENT_COST || to.isOccupiedByEnemy(armies.getEmpire())) {
+                int movementCost = armies.getMovementCost(to.getTerrain());
+                if (movementCost == ArmyType.FORBIDDEN_MOVEMENT_COST) {
                     continue;
                 }
-                if (!ignoreGroups) {
-                    // Always friendly group.
-                    final ArmyGroup group = to.getGroup();
-                    if (group != null && group.getArmyCount() + armies.getCount() > ArmyGroup.MAX_ARMY_COUNT) {
+                if (to.isOccupiedByEnemy(armies.getEmpire())) {
+                    if (respectEnemies) {
                         continue;
                     }
+                    final City city = to.getCity();
+                    if (city == null) {
+                        movementCost = ATTACK_MOVEMENT_COST;
+                    } else if (city != target.getCity()) {
+                        // Avoid non-target enemy cities.
+                        movementCost = UNWANTED_MOVEMENT_COST;
+                    }
+                } else if (!to.canLocate(armies)) {
+                    // Always friendly group.
+                    if (respectFriends) {
+                        continue;
+                    }
+                    movementCost = UNWANTED_MOVEMENT_COST;
                 }
                 final int value = (((values.get(from) >> INDEX_SHIFT) + movementCost) << INDEX_SHIFT) + index;
                 if (value < values.getOrDefault(to, Integer.MAX_VALUE)) {

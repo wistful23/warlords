@@ -1,8 +1,11 @@
 package com.def.warlords.control;
 
+import com.def.warlords.game.Computer;
 import com.def.warlords.game.Game;
+import com.def.warlords.game.Player;
 import com.def.warlords.game.PlayerController;
 import com.def.warlords.game.model.*;
+import com.def.warlords.util.Util;
 
 import javax.swing.Timer;
 import java.awt.event.KeyEvent;
@@ -17,6 +20,9 @@ public class ComputerController implements PlayerController {
     private static final int TURN_DELAY = 500;
 
     private final MainController controller;
+
+    private Computer computer;
+    private Player player;
 
     private boolean stopComputerMode;
 
@@ -133,14 +139,17 @@ public class ComputerController implements PlayerController {
 
     @Override
     public void beginTurn() {
-        controller.disableActiveContainer();
+        if (!controller.disableActiveContainer()) {
+            throw new IllegalStateException("Active container is already disabled");
+        }
+        computer = new Computer(controller.getGame());
+        player = controller.getGame().getCurrentPlayer();
     }
 
     @Override
     public void playTurn() {
-        // Currently the computer does nothing.
         controller.showCapital();
-        final Timer timer = controller.createTimer(TURN_DELAY, e -> endTurn());
+        final Timer timer = controller.createTimer(TURN_DELAY, e -> moveNextGroup(true));
         timer.setRepeats(false);
         timer.start();
     }
@@ -175,6 +184,33 @@ public class ComputerController implements PlayerController {
 
     @Override
     public void reportNoGoldForProducing() {
+    }
+
+    private void moveNextGroup(boolean prevGroupFinished) {
+        if (!prevGroupFinished) {
+            controller.getPlayingMap().updateArmySelection(Army.State.QUIT);
+        }
+        if (moveActiveGroup(false) || moveActiveGroup(true)) {
+            return;
+        }
+        computer.selectProduction(player.getCities());
+        endTurn();
+    }
+
+    private boolean moveActiveGroup(boolean moveCityGroup) {
+        final PlayingMap playingMap = controller.getPlayingMap();
+        for (final ArmyGroup group : player.getGroups()) {
+            if (group.isFullyActive() && group.getTile().isCity() == moveCityGroup) {
+                playingMap.selectArmyGroup(group);
+                final Tile target = computer.findTarget(playingMap.getArmySelection());
+                if (target != null) {
+                    Util.assertTrue(playingMap.moveArmySelection(target, false, this::moveNextGroup));
+                    return true;
+                }
+                playingMap.updateArmySelection(Army.State.QUIT);
+            }
+        }
+        return false;
     }
 
     private void endTurn() {

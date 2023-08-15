@@ -121,8 +121,8 @@ public class Army implements Record, Locatable, Comparable<Army> {
     }
 
     // State.
-    public State getState() {
-        return state;
+    public boolean isActive() {
+        return state == State.ACTIVE;
     }
 
     public void updateState(State state) {

@@ -43,7 +43,11 @@ public class ArmyGroup implements Record, Locatable, Comparable<ArmyGroup> {
     }
 
     public boolean isActive() {
-        return armies.stream().anyMatch(army -> army.getState() == Army.State.ACTIVE);
+        return armies.stream().anyMatch(Army::isActive);
+    }
+
+    public boolean isFullyActive() {
+        return armies.stream().allMatch(Army::isActive);
     }
 
     public boolean isNavy() {

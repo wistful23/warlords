@@ -46,6 +46,10 @@ public class Empire implements Record {
         return type;
     }
 
+    public boolean isNeutral() {
+        return type == EmpireType.NEUTRAL;
+    }
+
     public int getGold() {
         return gold;
     }

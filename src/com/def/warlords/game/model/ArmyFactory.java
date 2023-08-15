@@ -37,6 +37,14 @@ public class ArmyFactory implements Record {
         return type;
     }
 
+    public boolean isNavy() {
+        return type.isNavy();
+    }
+
+    public boolean isFlying() {
+        return type.isFlying();
+    }
+
     public int getTime() {
         return time;
     }

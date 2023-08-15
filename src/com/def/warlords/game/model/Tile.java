@@ -51,6 +51,10 @@ public class Tile implements Record, Locatable, Comparable<Tile> {
         return terrain == TerrainType.WATER || terrain == TerrainType.SHORE;
     }
 
+    public boolean isMountain() {
+        return terrain == TerrainType.MOUNTAIN;
+    }
+
     public boolean isCity() {
         return terrain == TerrainType.CITY;
     }
@@ -98,6 +102,10 @@ public class Tile implements Record, Locatable, Comparable<Tile> {
     }
 
     // Occupation.
+    public int getArmyCount() {
+        return group != null ? group.getArmyCount() : 0;
+    }
+
     public boolean isFull() {
         return group != null && group.isFull();
     }
@@ -112,6 +120,13 @@ public class Tile implements Record, Locatable, Comparable<Tile> {
 
     public boolean isOccupiedByEnemy(Empire empire) {
         return (group != null && group.getEmpire() != empire) || (city != null && city.getEmpire() != empire);
+    }
+
+    public boolean canLocate(ArmyList armies) {
+        if (isOccupiedByEnemy(armies.getEmpire())) {
+            return false;
+        }
+        return group == null || group.getArmyCount() + armies.getCount() <= ArmyGroup.MAX_ARMY_COUNT;
     }
 
     // Actions.
