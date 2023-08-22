@@ -36,6 +36,10 @@ public final class Util {
         assert !value;
     }
 
+    public static void assertNull(Object value) {
+        assert value == null;
+    }
+
     public static void assertNotNull(Object value) {
         assert value != null;
     }

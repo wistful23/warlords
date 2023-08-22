@@ -1,6 +1,7 @@
 package com.def.warlords.control.form;
 
 import com.def.warlords.control.common.Sprites;
+import com.def.warlords.game.Game;
 import com.def.warlords.game.model.*;
 import com.def.warlords.graphics.Cursor;
 import com.def.warlords.graphics.Palette;
@@ -25,11 +26,12 @@ import static com.def.warlords.control.common.Dimensions.*;
  */
 public class CombatForm extends Form {
 
-    private static final int DELAY_KILL_ARMY = 1000;
-    private static final int DELAY_REMOVE_BLOOD = 300;
-    private static final int DELAY_AFTER_KILL = 150;
+    private static final int DELAY_NEXT_ROUND = 1000;
+    private static final int DELAY_AFTER_ROUND = 150;
+    private static final int DELAY_REMOVE_ARMY = 300;
+    private static final int DELAY_COMPUTER_MESSAGE = 3000;
 
-    private final Kingdom kingdom;
+    private final Game game;
     private final ArmyList attackingArmies, defendingArmies;
     private final Tile tile;
     private final List<Boolean> protocol;
@@ -39,14 +41,14 @@ public class CombatForm extends Form {
     private final Queue<Image> defendingArmyImages = new ArrayDeque<>();
     private Image killedArmyImage, bloodImage;
 
+    private long lastRoundTime;
     private int roundCount;
-    private Timer killArmyTimer, removeBloodTimer;
-    private long lastKillTime;
+    private Timer nextRoundTimer, removeArmyTimer;
 
-    public CombatForm(FormController controller, Kingdom kingdom, ArmyList attackingArmies, ArmyList defendingArmies,
+    public CombatForm(FormController controller, Game game, ArmyList attackingArmies, ArmyList defendingArmies,
                       Tile tile, List<Boolean> protocol) {
         super(controller);
-        this.kingdom = kingdom;
+        this.game = game;
         this.attackingArmies = attackingArmies;
         this.defendingArmies = defendingArmies;
         this.tile = tile;
@@ -56,7 +58,12 @@ public class CombatForm extends Form {
     @Override
     void init() {
         add(new GrayPanel(41, 70, 293, 200));
+        final Empire attackingEmpire = attackingArmies.getEmpire();
+        final Empire defendingEmpire = defendingArmies.getEmpire();
         messageLabel = add(new Label(0, 356, SCREEN_WIDTH, Label.Alignment.CENTER));
+        if (game.isComputerTurn()) {
+            messageLabel.setText(defendingEmpire.getType().getName() + ": you are being attacked!");
+        }
         // Landscape.
         add(new Rectangle(408, 10, 224, 224, Palette.BLUE_LIGHT));
         if (tile.isWater()) {
@@ -87,18 +94,18 @@ public class CombatForm extends Form {
                 add(new Image(408, 220, Sprites.COMBAT_FOREST));
             }
             // Flags.
-            if (defendingArmies.getEmpire().getType() != EmpireType.NEUTRAL) {
+            if (!defendingEmpire.isNeutral()) {
                 add(new Image(475, 260, Sprites.DEFENDER_FLAG_STAND));
-                add(new Image(478, 246, Sprites.getDefenderFlagSprite(defendingArmies.getEmpire().getType())));
+                add(new Image(478, 246, Sprites.getDefenderFlagSprite(defendingEmpire.getType())));
             }
             add(new Image(427, 288, Sprites.ATTACKER_FLAG_STAND));
-            add(new Image(433, 268, Sprites.getAttackerFlagSprite(attackingArmies.getEmpire().getType())));
+            add(new Image(433, 268, Sprites.getAttackerFlagSprite(attackingEmpire.getType())));
         }
         // Banners.
-        if (defendingArmies.getEmpire().getType() != EmpireType.NEUTRAL) {
-            add(new Image(568, 38, Sprites.getEmpireBannerSprite(defendingArmies.getEmpire().getType())));
+        if (!defendingEmpire.isNeutral()) {
+            add(new Image(568, 38, Sprites.getEmpireBannerSprite(defendingEmpire.getType())));
         }
-        add(new Image(432, 38, Sprites.getEmpireBannerSprite(attackingArmies.getEmpire().getType())));
+        add(new Image(432, 38, Sprites.getEmpireBannerSprite(attackingEmpire.getType())));
         // Defending armies.
         final int rowCount = defendingArmies.size() / ArmyGroup.MAX_ARMY_COUNT;
         for (int row = 0; row < rowCount; ++row) {
@@ -122,17 +129,21 @@ public class CombatForm extends Form {
             attackingArmyImages.add(add(new Image(x, 222, Sprites.getArmySprite(attackingArmies.get(index)))));
         }
         // Timers.
-        killArmyTimer = createTimer(DELAY_KILL_ARMY, e -> killArmy());
-        removeBloodTimer = createTimer(DELAY_REMOVE_BLOOD, e -> removeBlood());
-        removeBloodTimer.setRepeats(false);
+        nextRoundTimer = createTimer(DELAY_NEXT_ROUND, e -> nextRound());
+        nextRoundTimer.setRepeats(false);
+        removeArmyTimer = createTimer(DELAY_REMOVE_ARMY, e -> removeArmy());
+        removeArmyTimer.setRepeats(false);
         // Start.
-        killArmyTimer.start();
-        killArmy();
+        if (game.isComputerTurn()) {
+            nextRoundTimer.start();
+        } else {
+            nextRound();
+        }
     }
 
     @Override
     public Cursor getCursor(MouseEvent e) {
-        return roundCount <= protocol.size() ? Cursor.SWORD : Cursor.MODAL;
+        return game.isComputerTurn() ? Cursor.EMPTY : roundCount <= protocol.size() ? Cursor.SWORD : Cursor.MODAL;
     }
 
     @Override
@@ -146,65 +157,78 @@ public class CombatForm extends Form {
     }
 
     private void nextRound() {
-        if (roundCount <= protocol.size()) {
-            if (System.currentTimeMillis() - lastKillTime < DELAY_AFTER_KILL) {
-                return;
-            }
-            removeBlood();
+        if (System.currentTimeMillis() - lastRoundTime < DELAY_AFTER_ROUND) {
+            return;
+        }
+        nextRoundTimer.stop();
+        removeArmy();
+        if (roundCount < protocol.size()) {
             killArmy();
-            if (roundCount <= protocol.size()) {
-                killArmyTimer.restart();
+            nextRoundTimer.start();
+        } else if (roundCount == protocol.size()) {
+            final Hero hero = attackingArmies.getHero();
+            if (game.isComputerTurn()) {
+                final String defendingEmpireName = defendingArmies.getEmpire().getType().getName();
+                if (defendingArmyImages.isEmpty()) {
+                    messageLabel.setText(hero != null ? hero.getName() + " has won the battle!"
+                                                      : defendingEmpireName + ": you have lost!");
+                } else {
+                    messageLabel.setText(defendingEmpireName + ": you are victorious!");
+                }
+                nextRoundTimer.setInitialDelay(DELAY_COMPUTER_MESSAGE);
+                nextRoundTimer.start();
+            } else {
+                if (defendingArmyImages.isEmpty()) {
+                    if (protocol.isEmpty()) {
+                        messageLabel.setText("The garrison has fled before you!");
+                    } else {
+                        messageLabel.setText(hero != null ? hero.getName() + " has won the battle!"
+                                                          : "You are victorious!");
+                    }
+                } else {
+                    messageLabel.setText("You have been defeated!");
+                }
             }
-        } else if (roundCount <= protocol.size() + 1) {
+        } else if (roundCount == protocol.size() + 1) {
             final City city = tile.getCity();
-            if (city != null && defendingArmyImages.isEmpty()) {
+            if (defendingArmyImages.isEmpty() && !game.isComputerTurn() && city != null && !city.isNeutral()) {
                 messageLabel.setText("Your armies pillage " + city.getEmpire().getPillagedGold() + " gp!");
-                ++roundCount;
             } else {
                 deactivate();
+                return;
             }
-        } else {
+        } else if (roundCount == protocol.size() + 2) {
             deactivate();
-        }
-    }
-
-    private void killArmy() {
-        lastKillTime = System.currentTimeMillis();
-        if (roundCount < protocol.size()) {
-            killedArmyImage = protocol.get(roundCount) ? defendingArmyImages.remove() : attackingArmyImages.remove();
-            bloodImage = add(new Image(killedArmyImage.getX(), killedArmyImage.getY(), Sprites.ARMY_BLOOD));
-            removeBloodTimer.start();
+            return;
         } else {
-            // NOTE: W supports messages when an opponent attacks.
-            if (defendingArmyImages.isEmpty()) {
-                if (protocol.isEmpty()) {
-                    messageLabel.setText("The garrison has fled before you!");
-                } else {
-                    final Hero hero = attackingArmies.getHero();
-                    messageLabel.setText(
-                            hero != null ? hero.getName() + " has won the battle!" : "You are victorious!");
-                }
-            } else {
-                messageLabel.setText("You have been defeated!");
-            }
-            killArmyTimer.stop();
+            // This point has to be unreachable.
+            Util.fail();
         }
+        lastRoundTime = System.currentTimeMillis();
         ++roundCount;
     }
 
-    private void removeBlood() {
-        if (bloodImage == null) {
+    private void killArmy() {
+        Util.assertNull(killedArmyImage);
+        Util.assertNull(bloodImage);
+        killedArmyImage = protocol.get(roundCount) ? defendingArmyImages.remove() : attackingArmyImages.remove();
+        bloodImage = add(new Image(killedArmyImage.getX(), killedArmyImage.getY(), Sprites.ARMY_BLOOD));
+        removeArmyTimer.start();
+    }
+
+    private void removeArmy() {
+        if (killedArmyImage == null) {
             return;
         }
-        Util.assertNotNull(killedArmyImage);
+        Util.assertNotNull(bloodImage);
         remove(killedArmyImage);
         remove(bloodImage);
         killedArmyImage = bloodImage = null;
-        removeBloodTimer.stop();
+        removeArmyTimer.stop();
     }
 
     private boolean findTerrainAround(Tile tile, TerrainType terrain) {
-        for (final Tile neighborTile : kingdom.getNeighborTiles(tile, true)) {
+        for (final Tile neighborTile : game.getKingdom().getNeighborTiles(tile, true)) {
             if (neighborTile.getTerrain() == terrain) {
                 return true;
             }

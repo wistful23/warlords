@@ -1,5 +1,6 @@
 package com.def.warlords.control;
 
+import com.def.warlords.control.form.CombatForm;
 import com.def.warlords.game.Computer;
 import com.def.warlords.game.Game;
 import com.def.warlords.game.Player;
@@ -131,6 +132,13 @@ public class ComputerController implements PlayerController {
 
     @Override
     public void onCombat(ArmyList attackingArmies, ArmyList defendingArmies, Tile tile, List<Boolean> protocol) {
+        if (!defendingArmies.getEmpire().isNeutral()) {
+            final InfoScreen infoScreen = controller.getInfoScreen();
+            infoScreen.setVisible(false);
+            new CombatForm(controller, controller.getGame(), attackingArmies, defendingArmies, tile, protocol)
+                    .activate();
+            infoScreen.setVisible(true);
+        }
     }
 
     @Override

@@ -200,6 +200,10 @@ public class MainController extends JComponent
         return strategicMap;
     }
 
+    public InfoScreen getInfoScreen() {
+        return infoScreen;
+    }
+
     public ProductionScreen getProductionScreen() {
         return productionScreen;
     }
@@ -876,7 +880,7 @@ public class MainController extends JComponent
         playingMap.setCombatTile(tile);
         new SoundForm(this, SoundInfo.WAR).activate();
         infoScreen.setVisible(false);
-        new CombatForm(this, game.getKingdom(), attackingArmies, defendingArmies, tile, protocol).activate();
+        new CombatForm(this, game, attackingArmies, defendingArmies, tile, protocol).activate();
         playingMap.setCombatTile(null);
         infoScreen.setVisible(true);
     }
