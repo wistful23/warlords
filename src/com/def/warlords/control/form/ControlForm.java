@@ -32,7 +32,7 @@ public class ControlForm extends Form {
         for (int index = 0; index < game.getPlayerCount(); ++index) {
             final int y = 54 + 30 * index;
             final Player player = game.getPlayer(index);
-            add(new Label(81, y, font, player.getEmpireType().getName()));
+            add(new Label(81, y, font, player.getEmpire().getName()));
             // NOTE: W displays offset computer sprites on top of the human sprite.
             final Image levelImage =
                     add(new Image(260, y - 8, player.isDestroyed()

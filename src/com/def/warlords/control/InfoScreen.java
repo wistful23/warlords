@@ -28,10 +28,11 @@ public class InfoScreen extends Container {
         // NOTE: W doesn't support dynamic updates.
         final Font font = FontFactory.getInstance().getGothicFont();
         final Game game = controller.getGame();
+        final Empire empire = game.getCurrentPlayer().getEmpire();
         if (game.isComputerTurn()) {
-            final EmpireType empireType = game.getCurrentPlayer().getEmpireType();
+            final EmpireType empireType = empire.getType();
             final boolean singular = empireType == EmpireType.ELVALLIE || empireType == EmpireType.LORD_BANE;
-            final String text = empireType.getName() + (singular ? " is" : " are") + " moving!";
+            final String text = empire.getName() + (singular ? " is" : " are") + " moving!";
             font.drawString(g, (Dimensions.SCREEN_WIDTH - font.getLength(text) + 1) / 2, 356, text);
             return;
         }
@@ -43,9 +44,8 @@ public class InfoScreen extends Container {
         } else if (!selection.isEmpty()) {
             command = Command.MOVE;
         }
-        final Empire empire = game.getCurrentPlayer().getEmpire();
         font.drawString(g, 81, 336, "Name:");
-        font.drawString(g, 143, 336, empire.getType().getName());
+        font.drawString(g, 143, 336, empire.getName());
         font.drawString(g, 410, 336, "Command:");
         font.drawString(g, 503, 336, command.getName());
         switch (command) {
@@ -69,7 +69,7 @@ public class InfoScreen extends Container {
                     font.drawString(g, 63, 376, "Defence:");
                     font.drawString(g, 143, 376, city.getDefence() + "");
                     font.drawString(g, 415, 356, "Owner:");
-                    font.drawString(g, 483, 356, city.getEmpire().getType().getName());
+                    font.drawString(g, 483, 356, city.getEmpire().getName());
                     font.drawString(g, 410, 376, "Income:");
                     font.drawString(g, 483, 376, city.getIncome() + " gp");
                 } else {

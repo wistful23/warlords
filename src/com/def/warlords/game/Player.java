@@ -64,10 +64,6 @@ public class Player implements Record {
         return empire;
     }
 
-    public EmpireType getEmpireType() {
-        return empire.getType();
-    }
-
     public City getCapitalCity() {
         return empire.getCapitalCity();
     }

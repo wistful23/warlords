@@ -62,7 +62,7 @@ public class CombatForm extends Form {
         final Empire defendingEmpire = defendingArmies.getEmpire();
         messageLabel = add(new Label(0, 356, SCREEN_WIDTH, Label.Alignment.CENTER));
         if (game.isComputerTurn()) {
-            messageLabel.setText(defendingEmpire.getType().getName() + ": you are being attacked!");
+            messageLabel.setText(defendingEmpire.getName() + ": you are being attacked!");
         }
         // Landscape.
         add(new Rectangle(408, 10, 224, 224, Palette.BLUE_LIGHT));
@@ -168,7 +168,7 @@ public class CombatForm extends Form {
         } else if (roundCount == protocol.size()) {
             final Hero hero = attackingArmies.getHero();
             if (game.isComputerTurn()) {
-                final String defendingEmpireName = defendingArmies.getEmpire().getType().getName();
+                final String defendingEmpireName = defendingArmies.getEmpire().getName();
                 if (defendingArmyImages.isEmpty()) {
                     messageLabel.setText(hero != null ? hero.getName() + " has won the battle!"
                                                       : defendingEmpireName + ": you have lost!");

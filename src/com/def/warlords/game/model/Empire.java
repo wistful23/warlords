@@ -50,6 +50,10 @@ public class Empire implements Record {
         return type == EmpireType.NEUTRAL;
     }
 
+    public String getName() {
+        return type.getName();
+    }
+
     public int getGold() {
         return gold;
     }

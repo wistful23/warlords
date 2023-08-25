@@ -459,9 +459,9 @@ public class MainController extends JComponent
     @Override
     public void onPlayerDestroyed(Player player) {
         if (player.isHuman()) {
-            showMessage("Wretched  " + player.getEmpireType().getName() + "!  For you, the war is over!");
+            showMessage("Wretched  " + player.getEmpire().getName() + "!  For you, the war is over!");
         } else {
-            showMessage(player.getEmpireType().getName() + " are no longer a threat!", true);
+            showMessage(player.getEmpire().getName() + " are no longer a threat!", true);
         }
     }
 
@@ -485,7 +485,7 @@ public class MainController extends JComponent
     @Override
     public void onVictory(int playerIndex, Player player) {
         // NOTE: W plays the horn sound.
-        showMessage("Player " + (playerIndex + 1) + ", " + player.getEmpireType().getName() + ": You have won!");
+        showMessage("Player " + (playerIndex + 1) + ", " + player.getEmpire().getName() + ": You have won!");
         showMessage("You now rule all of Illuria ...");
         showMessage("You may now inspect your domain.");
     }
@@ -497,7 +497,7 @@ public class MainController extends JComponent
         endProductionReport = false;
         showCapital();
         final Player player = game.getCurrentPlayer();
-        showMessage(player.getEmpireType().getName() + ": Click when ready!");
+        showMessage(player.getEmpire().getName() + ": Click when ready!");
         if (player.getGold() == 0) {
             showMessage("Your treasuries are exhausted!");
         }
@@ -797,8 +797,7 @@ public class MainController extends JComponent
             final Crypt crypt = artifact.getCrypt();
             if (hero != null) {
                 final City city = GameHelper.getNearest(kingdom.getCities(), hero);
-                showMessage(
-                        "... near " + city.getName() + " with a hero of the " + hero.getEmpire().getType().getName());
+                showMessage("... near " + city.getName() + " with a hero of the " + hero.getEmpire().getName());
             } else if (tile != null) {
                 final City city = GameHelper.getNearest(kingdom.getCities(), tile);
                 // Razed city is NEUTRAL.

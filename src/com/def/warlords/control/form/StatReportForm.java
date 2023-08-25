@@ -57,17 +57,18 @@ public class StatReportForm extends EmptyForm {
         for (int index = 0; index < game.getPlayerCount(); ++index) {
             final int y = 336 + index * 8;
             final Player player = game.getPlayer(index);
+            final EmpireType empireType = player.getEmpire().getType();
             // NOTE: W displays a unit length bar for the gold report when the player is dead.
             final int report = Util.truncate(type.getReport(player), MAX_BAR_LENGTH);
             // Baseline.
-            g.setColor(player.getEmpireType() == EmpireType.LORD_BANE ? Palette.RED : Palette.BLACK);
+            g.setColor(empireType == EmpireType.LORD_BANE ? Palette.RED : Palette.BLACK);
             g.fillRect(18, y, 1, 6);
             // Shadow.
             if (report > SHORT_BAR_LENGTH) {
                 g.fillRect(19, y + 4, report - SHORT_BAR_LENGTH, 2);
             }
             // Bar.
-            g.setColor(player.getEmpireType().getColor());
+            g.setColor(empireType.getColor());
             g.fillRect(19, y, report, 4);
         }
     }

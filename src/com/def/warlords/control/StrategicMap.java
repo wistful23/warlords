@@ -67,7 +67,7 @@ public class StrategicMap extends StrategicMapComponent {
                     if (empire == null) {
                         // Razed city.
                         drawCityTag(g, city.getPosX(), city.getPosY(), EmpireType.NEUTRAL);
-                    } else if (empire.getType() != EmpireType.NEUTRAL) {
+                    } else if (!empire.isNeutral()) {
                         drawCityTag(g, city.getPosX(), city.getPosY(), empire.getType());
                     }
                 }
