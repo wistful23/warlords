@@ -75,7 +75,9 @@ public class DeveloperController {
         // Whole kingdom.
         if (keyCode == KeyEvent.VK_A) {
             for (final City city : kingdom.getCities()) {
-                DeveloperHelper.captureCity(empire, city);
+                if (city.getEmpire() != null) {
+                    empire.capture(city);
+                }
             }
         }
         // Add gold.

@@ -1,17 +1,12 @@
 package com.def.warlords.game.model;
 
 import com.def.warlords.util.Logger;
-import com.def.warlords.util.Util;
 
 /**
  * @author wistful23
  * @version 1.23
  */
 public final class DeveloperHelper {
-
-    public static void captureCity(Empire empire, City city) {
-        Util.assertTrue(empire.registerCity(city));
-    }
 
     public static void locateArmy(Empire empire, Tile tile, Army army) {
         if (!empire.registerArmy(army)) {

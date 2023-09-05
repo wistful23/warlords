@@ -162,6 +162,11 @@ public class Empire implements Record {
         if (cityEmpire == null) {
             throw new IllegalArgumentException("City is not registered in an empire");
         }
+        if (cityEmpire == this) {
+            return;
+        }
+        // Execute all enemy heroes.
+        city.getArmies().stream().filter(Army::isHero).forEach(army -> army.kill(army.getGroup().getTile()));
         // NOTE: W uses the following weird gold calculation.
         final int pillagedGold = cityEmpire.getPillagedGold();
         Util.assertTrue(cityEmpire.pay(pillagedGold * 2));
