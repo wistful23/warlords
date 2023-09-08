@@ -112,9 +112,9 @@ public class HeroForm extends Form {
         public void paint(Graphics g) {
             super.paint(g);
             for (final Hero hero : heroes) {
-                drawCityTag(g, hero.getPosX(), hero.getPosY(),
-                        hero == currentHero ? EmpireType.SIRIANS : EmpireType.ORCS_OF_KOR);
+                drawCityTag(g, hero.getPosX(), hero.getPosY(), EmpireType.SIRIANS);
             }
+            drawCityTag(g, currentHero.getPosX(), currentHero.getPosY(), EmpireType.ORCS_OF_KOR);
         }
     }
 }
