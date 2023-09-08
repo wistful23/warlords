@@ -166,11 +166,7 @@ public class Game implements Record {
             computerMode = false;
         }
         controller = currentPlayer.isHuman() ? humanController : computerController;
-        if (currentTurnCount == 1) {
-            currentPlayer.start(controller);
-        } else {
-            currentPlayer.turn(controller);
-        }
+        currentPlayer.turn(controller, currentTurnCount);
     }
 
     private boolean isAnyHumanPlayerActive() {

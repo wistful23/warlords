@@ -15,6 +15,8 @@ import java.util.List;
  */
 public class Player implements Record {
 
+    private static final int HERO_OFFER_TURN_INTERVAL = 5;
+
     private static final int MIN_HERO_OFFER_CHANCE = 10;
     private static final int MAX_HERO_OFFER_CHANCE = 3;
 
@@ -29,6 +31,7 @@ public class Player implements Record {
 
     private boolean observed;
     private boolean destroyed;
+    private int lastHeroTurnCount;
     private ArmyGroup currentGroup;
 
     public Player() {
@@ -97,24 +100,29 @@ public class Player implements Record {
         destroyed = true;
     }
 
-    public void start(TurnController controller) {
-        controller.beginTurn();
-        final City capital = empire.getCapitalCity();
-        final String heroName = controller.getFirstHeroName(capital, kingdom.getRandomHeroName());
-        if (heroName == null) {
-            throw new IllegalStateException("Hero name is null");
+    public void turn(TurnController controller, int turnCount) {
+        if (turnCount < 1) {
+            throw new IllegalArgumentException("Invalid turn count");
         }
-        Util.assertNotNull(capital.hireHero(heroName, false));
-        controller.selectProduction(capital);
-        controller.playTurn();
-    }
-
-    public void turn(TurnController controller) {
+        if (turnCount == 1) {
+            // The first turn.
+            controller.beginTurn();
+            final City capital = empire.getCapitalCity();
+            final String heroName = controller.getFirstHeroName(capital, kingdom.getRandomHeroName());
+            if (heroName == null) {
+                throw new IllegalStateException("Hero name is null");
+            }
+            Util.assertNotNull(capital.hireHero(heroName, false));
+            lastHeroTurnCount = turnCount;
+            controller.selectProduction(capital);
+            controller.playTurn();
+            return;
+        }
         empire.recalculateGold();
         empire.getGroups().forEach(ArmyGroup::rest);
         controller.beginTurn();
         // Hero hiring.
-        hireHero(controller);
+        hireHero(controller, turnCount);
         // Delivery report.
         for (final ArmyDelivery delivery : empire.getDeliveries()) {
             if (delivery.deliver()) {
@@ -145,7 +153,10 @@ public class Player implements Record {
         controller.playTurn();
     }
 
-    private void hireHero(TurnController controller) {
+    private void hireHero(TurnController controller, int turnCount) {
+        if (empire.getHeroCount() > 0 && turnCount < lastHeroTurnCount + HERO_OFFER_TURN_INTERVAL) {
+            return;
+        }
         final int gold = empire.getGold();
         if (empire.getHeroCount() >= Empire.MAX_HERO_COUNT || gold <= MIN_HERO_PRICE) {
             return;
@@ -158,7 +169,9 @@ public class Player implements Record {
         if (city.isFull()) {
             return;
         }
-        final int cost = Util.randomInt(MIN_HERO_PRICE, Math.min(gold, MAX_HERO_PRICE));
+        final int minCost = Math.max(Math.min(gold / 2, MAX_HERO_PRICE - MIN_HERO_PRICE), MIN_HERO_PRICE);
+        final int maxCost = Math.min(gold, MAX_HERO_PRICE);
+        final int cost = Util.randomInt(minCost, maxCost);
         final String heroName = controller.getHeroName(city, cost, kingdom.getRandomHeroName());
         if (heroName == null) {
             return;
@@ -171,6 +184,7 @@ public class Player implements Record {
             controller.onAlliesBrought(allyCount);
             hero.joinAllies(kingdom, kingdom.getRandomAllyFactory(), allyCount);
         }
+        lastHeroTurnCount = turnCount;
         // BUG: W doesn't update Playing Map.
     }
 
@@ -224,9 +238,10 @@ public class Player implements Record {
     public void write(RecordOutputStream out) throws IOException {
         out.writeRecord(kingdom);
         out.writeRecord(empire);
-        out.writeInt(level.ordinal());
+        out.writeEnum(level);
         out.writeBoolean(observed);
         out.writeBoolean(destroyed);
+        out.writeInt(lastHeroTurnCount);
         out.writeRecord(currentGroup);
     }
 
@@ -234,9 +249,10 @@ public class Player implements Record {
     public void read(RecordInputStream in) throws IOException {
         kingdom = in.readRecord(Kingdom::new);
         empire = in.readRecord(Empire::new);
-        level = PlayerLevel.values()[in.readInt()];
+        level = in.readEnum(PlayerLevel.values());
         observed = in.readBoolean();
         destroyed = in.readBoolean();
+        lastHeroTurnCount = in.readInt();
         currentGroup = in.readRecord(ArmyGroup::new);
     }
 }
