@@ -33,10 +33,10 @@ public enum TerrainType {
             return MARSH;
         } else if (value >= -114 && value <= -100) {
             return ROAD;
+        } else if (value == -92 || value == -86) {
+            return WATER;
         } else if (value >= -99 && value <= -87) {
             return SHORE;
-        } else if (value == -86) {
-            return WATER;
         } else if (value >= -85 && value <= -72) {
             return FOREST;
         } else if (value >= -71 && value <= -58) {
