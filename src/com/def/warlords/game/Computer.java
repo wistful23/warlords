@@ -208,8 +208,7 @@ public final class Computer {
                 return target;
             }
             for (final Tile to : game.getKingdom().getNeighborTiles(from, false)) {
-                if (distances.containsKey(to) ||
-                        armies.getMovementCost(to.getTerrain()) == ArmyType.FORBIDDEN_MOVEMENT_COST) {
+                if (distances.containsKey(to) || armies.getMovementCost(to) == ArmyType.FORBIDDEN_MOVEMENT_COST) {
                     continue;
                 }
                 distances.put(to, dist);

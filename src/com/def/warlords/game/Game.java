@@ -20,7 +20,6 @@ public class Game implements Record {
 
     public static final int TOWER_PRICE = 100;
 
-    private static final int ATTACK_MOVEMENT_COST = 2;
     private static final int SEARCH_MOVEMENT_COST = 4;
     private static final int UNWANTED_MOVEMENT_COST = 7;
 
@@ -346,7 +345,7 @@ public class Game implements Record {
             return null;
         }
         final ArmyList armies = selection.getSelectedArmies();
-        if (armies.getMovementCost(target.getTerrain()) == ArmyType.FORBIDDEN_MOVEMENT_COST) {
+        if (armies.getMovementCost(target) == ArmyType.FORBIDDEN_MOVEMENT_COST) {
             return null;
         }
         if (respectEnemies && target.isOccupiedByEnemy(armies.getEmpire())) {
@@ -383,26 +382,14 @@ public class Game implements Record {
         }
         final Empire empire = selection.getSelectedGroup().getEmpire();
         final ArmyList armies = selection.getSelectedArmies();
-        final ArmyGroup group = tile.getGroup();
-        TerrainType terrain = tile.getTerrain();
-        if (group != null && group.getEmpire() == empire) {
-            // Friendly group.
-            if (group.getArmyCount() + armies.getCount() > ArmyGroup.MAX_ARMY_COUNT) {
-                // Overflow. Don't reset the selection.
-                return false;
-            }
-            if (group.isNavy() && !armies.isNavy()) {
-                // Boarding a ship. Using the PLAIN terrain since any army spends 2 MP when boarding.
-                terrain = TerrainType.PLAIN;
-            }
-        }
-        int movementCost = armies.getMovementCost(terrain);
-        if (movementCost == ArmyType.FORBIDDEN_MOVEMENT_COST) {
-            // The selection can't move to the terrain. Don't reset the selection.
+        if (tile.isOccupiedBy(empire) && !tile.canLocate(armies)) {
+            // Overflow. Don't reset the selection.
             return false;
         }
-        if (tile.isOccupiedByEnemy(empire)) {
-            movementCost = ATTACK_MOVEMENT_COST;
+        final int movementCost = armies.getMovementCost(tile);
+        if (movementCost == ArmyType.FORBIDDEN_MOVEMENT_COST) {
+            // The selection can't move to the tile. Don't reset the selection.
+            return false;
         }
         if (armies.getMovementPoints() < movementCost) {
             // Not enough movement points to move.
@@ -410,12 +397,13 @@ public class Game implements Record {
             selection.reset();
             return false;
         }
-        if (!tile.isOccupied() || tile.isOccupiedBy(empire)) {
+        if (!tile.isOccupiedByEnemy(empire)) {
             // Make a regular movement.
             move(selection, tile, movementCost);
             return true;
         }
         final City city = tile.getCity();
+        final ArmyGroup group = tile.getGroup();
         if (city != null) {
             // Attack a city.
             if (attack(armies, city.getArmies(), tile)) {
@@ -452,7 +440,7 @@ public class Game implements Record {
         }
         // Conquer towers.
         for (final Tile neighborTile : kingdom.getNeighborTiles(tile, true)) {
-            if (neighborTile.isTower() && !neighborTile.isOccupied()) {
+            if (neighborTile.isTower() && neighborTile.getGroup() == null) {
                 neighborTile.buildTower(armies.getEmpire());
             }
         }
@@ -470,7 +458,7 @@ public class Game implements Record {
             final List<Tile> neighborTiles = kingdom.getNeighborTiles(from, false);
             for (int index = 0; index < neighborTiles.size(); ++index) {
                 final Tile to = neighborTiles.get(index);
-                int movementCost = armies.getMovementCost(to.getTerrain());
+                int movementCost = armies.getMovementCost(to);
                 if (movementCost == ArmyType.FORBIDDEN_MOVEMENT_COST) {
                     continue;
                 }
@@ -479,9 +467,7 @@ public class Game implements Record {
                         continue;
                     }
                     final City city = to.getCity();
-                    if (city == null) {
-                        movementCost = ATTACK_MOVEMENT_COST;
-                    } else if (city != target.getCity()) {
+                    if (city != null && city != target.getCity()) {
                         // Avoid non-target enemy cities.
                         movementCost = UNWANTED_MOVEMENT_COST;
                     }

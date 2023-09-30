@@ -138,9 +138,9 @@ public class Army implements Record, Locatable, Comparable<Army> {
         return movementPoints;
     }
 
-    public int getMovementCost(TerrainType terrain) {
+    public int getMovementCost(Tile tile) {
         // MYTH: There is an artifact that allows a hero to fly.
-        return type.getMovementCost(terrain);
+        return type.getMovementCost(tile.getTerrain());
     }
 
     public void move(int movementCost) {

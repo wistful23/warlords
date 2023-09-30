@@ -13,6 +13,9 @@ import java.util.stream.Stream;
  */
 public class ArmyList extends ArrayList<Army> {
 
+    private static final int ATTACK_MOVEMENT_COST = 2;
+    private static final int BOARDING_MOVEMENT_COST = 2;
+
     private final Empire empire;
 
     public ArmyList(int initialCapacity, Empire empire) {
@@ -66,8 +69,11 @@ public class ArmyList extends ArrayList<Army> {
         return stream.mapToInt(Army::getMovementPoints).min().orElse(0);
     }
 
-    // Returns the movement cost required to move the armies to `terrain` or FORBIDDEN_MOVEMENT_COST if not possible.
-    public int getMovementCost(TerrainType terrain) {
+    // Returns the movement cost required to move the armies to `tile` or FORBIDDEN_MOVEMENT_COST if not possible.
+    public int getMovementCost(Tile tile) {
+        if (tile.isNavy(empire) && !isNavy()) {
+            return BOARDING_MOVEMENT_COST;
+        }
         final Stream<Army> stream;
         if (isHeroList()) {
             stream = stream();
@@ -76,7 +82,12 @@ public class ArmyList extends ArrayList<Army> {
         } else {
             stream = stream().filter(Util.not(Army::isHero));
         }
-        return stream.mapToInt(army -> army.getMovementCost(terrain)).max().orElse(ArmyType.FORBIDDEN_MOVEMENT_COST);
+        if (tile.isOccupiedByEnemy(empire)) {
+            return stream.anyMatch(army -> army.getMovementCost(tile) == ArmyType.FORBIDDEN_MOVEMENT_COST)
+                   ? ArmyType.FORBIDDEN_MOVEMENT_COST
+                   : ATTACK_MOVEMENT_COST;
+        }
+        return stream.mapToInt(army -> army.getMovementCost(tile)).max().orElse(ArmyType.FORBIDDEN_MOVEMENT_COST);
     }
 
     // Updates the state for each army from this army list.

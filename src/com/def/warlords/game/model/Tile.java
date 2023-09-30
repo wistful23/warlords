@@ -110,8 +110,8 @@ public class Tile implements Record, Locatable, Comparable<Tile> {
         return group != null && group.isFull();
     }
 
-    public boolean isOccupied() {
-        return group != null || city != null;
+    public boolean isNavy(Empire empire) {
+        return group != null && group.isNavy() && group.getEmpire() == empire;
     }
 
     public boolean isOccupiedBy(Empire empire) {

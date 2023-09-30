@@ -14,7 +14,7 @@ public class ArmyListTest {
     private Empire empire;
     private Army giants, cavalry, griffins, demons, dragons, navy;
     private Hero hero1, hero2;
-    private Tile plain, ruins, forest, hill, city;
+    private Tile plain, ruins, road, shore, water, forest, hill, mountain, city, bridge;
     private Building temple1, temple2;
     private Artifact artifact1, artifact2;
 
@@ -31,9 +31,14 @@ public class ArmyListTest {
         hero2 = new Hero("Hero2", true);
         plain = new Tile(0, 0, 0);
         ruins = new Tile(0, 0, -116);
+        road = new Tile(0, 0, -100);
+        shore = new Tile(0, 0, -99);
+        water = new Tile(0, 0, -86);
         forest = new Tile(0, 0, -72);
         hill = new Tile(0, 0, -71);
+        mountain = new Tile(0, 0, -43);
         city = new Tile(0, 0, -7);
+        bridge = new Tile(0, 0, -3);
         temple1 = new Building(BuildingType.TEMPLE, "Temple1");
         temple2 = new Building(BuildingType.TEMPLE, "Temple2");
         artifact1 = new Artifact("Artifact1", 1, 3);
@@ -128,40 +133,52 @@ public class ArmyListTest {
     @Test
     public void getMovementCost() {
         final ArmyList armies = new ArmyList(5, empire);
-        assertEquals(armies.getMovementCost(TerrainType.PLAIN), ArmyType.FORBIDDEN_MOVEMENT_COST);
-        assertEquals(armies.getMovementCost(TerrainType.WATER), ArmyType.FORBIDDEN_MOVEMENT_COST);
+        // Empty.
+        assertEquals(armies.getMovementCost(plain), ArmyType.FORBIDDEN_MOVEMENT_COST);
+        assertEquals(armies.getMovementCost(water), ArmyType.FORBIDDEN_MOVEMENT_COST);
         armies.add(hero1);
-        assertEquals(armies.getMovementCost(TerrainType.HILL), 6);
+        assertEquals(armies.getMovementCost(hill), 6);
         armies.add(giants);
-        assertEquals(armies.getMovementCost(TerrainType.ROAD), 1);
-        assertEquals(armies.getMovementCost(TerrainType.FOREST), 5);
-        assertEquals(armies.getMovementCost(TerrainType.HILL), 4);
-        assertEquals(armies.getMovementCost(TerrainType.MOUNTAIN), ArmyType.FORBIDDEN_MOVEMENT_COST);
-        assertEquals(armies.getMovementCost(TerrainType.WATER), ArmyType.FORBIDDEN_MOVEMENT_COST);
+        assertEquals(armies.getMovementCost(road), 1);
+        assertEquals(armies.getMovementCost(forest), 5);
+        assertEquals(armies.getMovementCost(hill), 4);
+        assertEquals(armies.getMovementCost(mountain), ArmyType.FORBIDDEN_MOVEMENT_COST);
+        assertEquals(armies.getMovementCost(water), ArmyType.FORBIDDEN_MOVEMENT_COST);
         armies.add(demons);
-        assertEquals(armies.getMovementCost(TerrainType.FOREST), 5);
-        assertEquals(armies.getMovementCost(TerrainType.HILL), 5);
-        assertEquals(armies.getMovementCost(TerrainType.SHORE), ArmyType.FORBIDDEN_MOVEMENT_COST);
+        assertEquals(armies.getMovementCost(forest), 5);
+        assertEquals(armies.getMovementCost(hill), 5);
+        assertEquals(armies.getMovementCost(shore), ArmyType.FORBIDDEN_MOVEMENT_COST);
         armies.add(navy);
-        assertEquals(armies.getMovementCost(TerrainType.PLAIN), ArmyType.FORBIDDEN_MOVEMENT_COST);
-        assertEquals(armies.getMovementCost(TerrainType.FOREST), ArmyType.FORBIDDEN_MOVEMENT_COST);
-        assertEquals(armies.getMovementCost(TerrainType.WATER), 1);
-        assertEquals(armies.getMovementCost(TerrainType.SHORE), 2);
-        assertEquals(armies.getMovementCost(TerrainType.BRIDGE), 2);
+        // Navy.
+        assertEquals(armies.getMovementCost(plain), ArmyType.FORBIDDEN_MOVEMENT_COST);
+        assertEquals(armies.getMovementCost(forest), ArmyType.FORBIDDEN_MOVEMENT_COST);
+        assertEquals(armies.getMovementCost(water), 1);
+        assertEquals(armies.getMovementCost(shore), 2);
+        assertEquals(armies.getMovementCost(bridge), 2);
         armies.add(dragons);
-        assertEquals(armies.getMovementCost(TerrainType.HILL), ArmyType.FORBIDDEN_MOVEMENT_COST);
-        assertEquals(armies.getMovementCost(TerrainType.MOUNTAIN), ArmyType.FORBIDDEN_MOVEMENT_COST);
+        assertEquals(armies.getMovementCost(hill), ArmyType.FORBIDDEN_MOVEMENT_COST);
+        assertEquals(armies.getMovementCost(mountain), ArmyType.FORBIDDEN_MOVEMENT_COST);
+        assertTrue(new Empire(EmpireType.LORD_BANE).registerArmy(griffins));
+        assertTrue(hill.locate(griffins));
+        assertEquals(armies.getMovementCost(hill), ArmyType.FORBIDDEN_MOVEMENT_COST);
         armies.remove(navy);
-        assertEquals(armies.getMovementCost(TerrainType.ROAD), 1);
-        assertEquals(armies.getMovementCost(TerrainType.MOUNTAIN), ArmyType.FORBIDDEN_MOVEMENT_COST);
+        // Attack.
+        assertEquals(armies.getMovementCost(hill), 2);
+        assertEquals(armies.getMovementCost(road), 1);
+        assertEquals(armies.getMovementCost(mountain), ArmyType.FORBIDDEN_MOVEMENT_COST);
+        assertEquals(armies.getMovementCost(shore), ArmyType.FORBIDDEN_MOVEMENT_COST);
+        assertTrue(empire.registerArmy(navy));
+        assertTrue(shore.locate(navy));
+        // Boarding.
+        assertEquals(armies.getMovementCost(shore), 2);
         armies.remove(demons);
         armies.remove(giants);
         armies.add(hero2);
-        assertEquals(armies.getMovementCost(TerrainType.BRIDGE), 1);
-        assertEquals(armies.getMovementCost(TerrainType.FOREST), 2);
-        assertEquals(armies.getMovementCost(TerrainType.HILL), 2);
-        assertEquals(armies.getMovementCost(TerrainType.WATER), 2);
-        assertEquals(armies.getMovementCost(TerrainType.MOUNTAIN), 3);
+        assertEquals(armies.getMovementCost(bridge), 1);
+        assertEquals(armies.getMovementCost(forest), 2);
+        assertEquals(armies.getMovementCost(hill), 2);
+        assertEquals(armies.getMovementCost(water), 2);
+        assertEquals(armies.getMovementCost(mountain), 3);
     }
 
     @Test
