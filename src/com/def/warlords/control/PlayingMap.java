@@ -172,13 +172,14 @@ public class PlayingMap extends Component {
         }
         final boolean disabled = controller.disableActiveContainer();
         controller.createTimer(DELAY_ANIMATION, actionEvent -> {
-            if (path.isEmpty() || !move(path.remove())) {
+            final boolean finished = path.isEmpty();
+            if (finished || !move(path.remove())) {
                 ((Timer) actionEvent.getSource()).stop();
                 if (disabled) {
                     controller.enableActiveContainer();
                 }
                 if (callback != null) {
-                    callback.accept(path.isEmpty());
+                    callback.accept(finished);
                 }
             }
         }).start();
