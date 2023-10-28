@@ -263,6 +263,7 @@ public class Game implements Record {
                     if (controller.onSageFound(gold)) {
                         hero.move(SEARCH_MOVEMENT_COST);
                     }
+                    hero.getEmpire().addGold(gold);
                     building.setExplored(true);
                     return;
                 }
@@ -329,9 +330,9 @@ public class Game implements Record {
                 }
                 break;
             case GOLD:
-                final int value = Util.randomInt(MIN_CRYPT_GOLD, MAX_CRYPT_GOLD);
-                controller.onGoldFound(hero, value);
-                hero.getEmpire().addGold(value);
+                final int gold = Util.randomInt(MIN_CRYPT_GOLD, MAX_CRYPT_GOLD);
+                controller.onGoldFound(hero, gold);
+                hero.getEmpire().addGold(gold);
                 break;
             default:
                 Util.fail();
