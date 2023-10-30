@@ -87,7 +87,7 @@ public final class Computer {
     // Finds and returns the target tile proposed to move the selection.
     // Returns null if no move is proposed.
     // NOTE: This method may change the selection configuration.
-    public Tile findTarget(ArmySelection selection) {
+    public Tile findTarget(ArmySelection selection, boolean searchBuildings) {
         if (selection.isEmpty()) {
             return null;
         }
@@ -95,8 +95,19 @@ public final class Computer {
         final Tile source = selection.getSelectedGroup().getTile();
         final City city = source.getCity();
         if (city == null) {
+            // Try to move the rested armies.
+            final ArmyList restedArmies =
+                    new ArmyList(armies.stream().filter(Army::isRested).collect(Collectors.toList()),
+                            armies.getEmpire());
+            if (restedArmies.size() > 0 && restedArmies.size() < armies.size()) {
+                final Tile target = findTarget(restedArmies, source, searchBuildings, false);
+                if (target != null) {
+                    selectSubsetArmies(armies, restedArmies);
+                    return target;
+                }
+            }
             // Always move the selection if out of city.
-            return findTarget(armies, source, true);
+            return findTarget(armies, source, searchBuildings, true);
         }
         final int defendingArmyCount = getDefendingArmyCount(city);
         final int maxArmyCount = city.getArmyCount() - defendingArmyCount;
@@ -114,7 +125,8 @@ public final class Computer {
                         attackingArmies.getEmpire());
                 final boolean alwaysMoveFlying =
                         defendingArmyCount <= 1 && flyingArmies.getCount() >= ArmyGroup.MAX_ARMY_COUNT / 2;
-                final Tile target = findTarget(flyingArmies, source, alwaysMoveHero || alwaysMoveFlying);
+                final Tile target =
+                        findTarget(flyingArmies, source, searchBuildings, alwaysMoveHero || alwaysMoveFlying);
                 if (target != null) {
                     selectSubsetArmies(armies, flyingArmies);
                     return target;
@@ -123,7 +135,7 @@ public final class Computer {
             // Move lone heroes iif DAC[0].
             if (defendingArmyCount == 0 || !attackingArmies.isHeroList()) {
                 // Try to move the attacking armies.
-                final Tile target = findTarget(attackingArmies, source, alwaysMoveHero);
+                final Tile target = findTarget(attackingArmies, source, searchBuildings, alwaysMoveHero);
                 if (target != null) {
                     selectSubsetArmies(armies, attackingArmies);
                     return target;
@@ -137,10 +149,18 @@ public final class Computer {
                 // Try to move the fastest army to capture a neutral or empty city.
                 final ArmyList fastestArmies = new ArmyList(1, armies.getEmpire());
                 fastestArmies.add(fastestArmy);
-                final Tile target = findTarget(fastestArmies, source, ArmyGroup.MAX_ARMY_COUNT, 0, false);
+                final Tile target = findTarget(fastestArmies, source, ArmyGroup.MAX_ARMY_COUNT, 0, false, false);
                 if (target != null) {
                     selectSubsetArmies(armies, fastestArmies);
                     return target;
+                }
+            }
+        }
+        if (searchBuildings && armies.getHero() != null) {
+            // Try to find artifacts inside the source city.
+            for (final Tile tile : city.getTiles()) {
+                if (tile.getArtifactCount() > 0 && tile.canLocate(armies)) {
+                    return tile;
                 }
             }
         }
@@ -154,7 +174,7 @@ public final class Computer {
 
     // Calculates the army count needed to defend the city (DAC).
     // NOTE: This method doesn't handle navy and flying enemy groups.
-    public int getDefendingArmyCount(City city) {
+    private int getDefendingArmyCount(City city) {
         int defendingArmyCount = 0;
         final Map<Tile, Integer> distances = new HashMap<>();
         final Queue<Tile> queue = new ArrayDeque<>();
@@ -188,12 +208,15 @@ public final class Computer {
         return defendingArmyCount;
     }
 
-    private Tile findTarget(ArmyList armies, Tile source, boolean ignoreAttackingArmyCount) {
-        return findTarget(armies, source, Integer.MAX_VALUE, ArmyGroup.MAX_ARMY_COUNT / 2, ignoreAttackingArmyCount);
+    private Tile findTarget(ArmyList armies, Tile source, boolean searchBuildings, boolean ignoreAttackingArmyCount) {
+        return findTarget(armies, source, Integer.MAX_VALUE, ArmyGroup.MAX_ARMY_COUNT / 2,
+                searchBuildings, ignoreAttackingArmyCount);
     }
 
     private Tile findTarget(ArmyList armies, Tile source,
-                            int commonDistLimit, int defenceDistLimit, boolean ignoreAttackingArmyCount) {
+                            int commonDistLimit, int defenceDistLimit,
+                            boolean searchBuildings, boolean ignoreAttackingArmyCount) {
+        searchBuildings = searchBuildings && armies.getHero() != null;
         Tile target = null;
         int currentCityWeight = Integer.MAX_VALUE;
         final Map<City, Integer> dac = new HashMap<>();
@@ -213,6 +236,17 @@ public final class Computer {
                 }
                 distances.put(to, dist);
                 queue.add(to);
+                if (searchBuildings) {
+                    // Try to find buildings.
+                    final Building building = to.getBuilding();
+                    if (building != null && !building.isExplored() && (building.isCrypt() || building.isSage())) {
+                        return to;
+                    }
+                    // Try to find artifacts.
+                    if (to.getArtifactCount() > 0 && to.canLocate(armies)) {
+                        return to;
+                    }
+                }
                 final City city = to.getCity();
                 if (city == null || city == source.getCity()) {
                     // Do nothing inside the source city.

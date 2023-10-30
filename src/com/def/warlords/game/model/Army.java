@@ -164,6 +164,10 @@ public class Army implements Record, Locatable, Comparable<Army> {
         }
     }
 
+    public boolean isRested() {
+        return movementPoints >= movement;
+    }
+
     // Selection.
     public boolean isSelected() {
         return selected;

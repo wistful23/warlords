@@ -113,7 +113,7 @@ public class DeveloperController {
         final Computer computer = new Computer(game);
         // Move the selection by the computer.
         if (keyCode == KeyEvent.VK_M) {
-            final Tile target = computer.findTarget(playingMap.getArmySelection());
+            final Tile target = computer.findTarget(playingMap.getArmySelection(), true);
             if (target != null) {
                 Util.assertTrue(playingMap.moveArmySelection(target, false, null));
             } else {

@@ -1,10 +1,7 @@
 package com.def.warlords.control;
 
 import com.def.warlords.control.form.CombatForm;
-import com.def.warlords.game.Computer;
-import com.def.warlords.game.Game;
-import com.def.warlords.game.Player;
-import com.def.warlords.game.PlayerController;
+import com.def.warlords.game.*;
 import com.def.warlords.game.model.*;
 import com.def.warlords.util.Util;
 
@@ -18,7 +15,7 @@ import java.util.List;
  */
 public class ComputerController implements PlayerController {
 
-    private static final int TURN_DELAY = 500;
+    private static final int DELAY_TURN = 500;
 
     private final MainController controller;
 
@@ -157,7 +154,7 @@ public class ComputerController implements PlayerController {
     @Override
     public void playTurn() {
         controller.showCapital();
-        final Timer timer = controller.createTimer(TURN_DELAY, e -> moveNextGroup(true));
+        final Timer timer = controller.createTimer(DELAY_TURN, e -> moveNextGroup(true));
         timer.setRepeats(false);
         timer.start();
     }
@@ -207,15 +204,34 @@ public class ComputerController implements PlayerController {
 
     private boolean moveActiveGroup(boolean moveCityGroup) {
         final PlayingMap playingMap = controller.getPlayingMap();
+        final boolean searchBuildings = player.getLevel().compareTo(PlayerLevel.BARON) >= 0;
         for (final ArmyGroup group : player.getGroups()) {
-            if (group.isFullyActive() && group.getTile().isCity() == moveCityGroup) {
-                playingMap.selectArmyGroup(group);
-                final Tile target = computer.findTarget(playingMap.getArmySelection());
-                if (target != null) {
-                    Util.assertTrue(playingMap.moveArmySelection(target, false, this::moveNextGroup));
-                    return true;
+            final Tile tile = group.getTile();
+            final Hero hero = group.getArmies().getHero();
+            if (searchBuildings && hero != null && tile.getArtifactCount() > 0) {
+                // Take the artifacts.
+                for (final Artifact artifact : tile.getArtifacts()) {
+                    hero.takeArtifact(artifact);
                 }
-                playingMap.updateArmySelection(Army.State.QUIT);
+            }
+            if (group.isFullyActive()) {
+                if (searchBuildings && hero != null) {
+                    // Search the building.
+                    final Building building = tile.getBuilding();
+                    if (building != null && !building.isExplored()) {
+                        playingMap.selectArmyGroup(group);
+                        controller.getGame().search(playingMap.getArmySelection());
+                    }
+                }
+                if (tile.isCity() == moveCityGroup) {
+                    playingMap.selectArmyGroup(group);
+                    final Tile target = computer.findTarget(playingMap.getArmySelection(), searchBuildings);
+                    if (target != null) {
+                        Util.assertTrue(playingMap.moveArmySelection(target, false, this::moveNextGroup));
+                        return true;
+                    }
+                    playingMap.updateArmySelection(Army.State.QUIT);
+                }
             }
         }
         return false;
