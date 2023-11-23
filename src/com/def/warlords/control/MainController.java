@@ -367,9 +367,9 @@ public class MainController extends JComponent
             showMessage("Hero must be selected to drop an item");
             return;
         }
-        final Artifact result = showArtifactList("Dropping an item ...", hero.getArtifacts());
-        if (result != null) {
-            hero.dropArtifact(result);
+        final Artifact artifact = showArtifactList("Dropping an item ...", hero.getArtifacts());
+        if (artifact != null) {
+            hero.dropArtifact(artifact);
         }
     }
 
@@ -405,9 +405,9 @@ public class MainController extends JComponent
             showMessage("Hero must be selected to take an item");
             return;
         }
-        final Artifact result = showArtifactList("Taking an item ...", hero.getGroup().getTile().getArtifacts());
-        if (result != null) {
-            hero.takeArtifact(result);
+        final Artifact artifact = showArtifactList("Taking an item ...", hero.getGroup().getTile().getArtifacts());
+        if (artifact != null) {
+            hero.takeArtifact(artifact);
         }
     }
 
@@ -941,9 +941,9 @@ public class MainController extends JComponent
             throw new IllegalStateException("Info Screen has to be visible");
         }
         infoScreen.setVisible(false);
-        final Artifact result = new ItemResultForm<>(this, message, artifacts, Artifact::getName).getResult();
+        final Artifact artifact = new ItemResultForm<>(this, message, artifacts, Artifact::getName).getResult();
         infoScreen.setVisible(true);
-        return result;
+        return artifact;
     }
 
     private final class Keyboard extends KeyAdapter {
