@@ -1,6 +1,7 @@
 package com.def.warlords.control;
 
 import com.def.warlords.control.common.StrategicMapComponent;
+import com.def.warlords.game.Game;
 import com.def.warlords.game.model.*;
 import com.def.warlords.graphics.Bitmap;
 import com.def.warlords.graphics.Cursor;
@@ -69,9 +70,10 @@ public class StrategicMap extends StrategicMapComponent {
             return;
         }
         super.paint(g);
+        final Game game = controller.getGame();
         switch (mode) {
             case CITIES:
-                for (final City city : controller.getGame().getKingdom().getCities()) {
+                for (final City city : game.getKingdom().getCities()) {
                     final Empire empire = city.getEmpire();
                     if (empire == null) {
                         // Razed city.
@@ -82,7 +84,7 @@ public class StrategicMap extends StrategicMapComponent {
                 }
                 break;
             case RUINS:
-                for (final Building building : controller.getGame().getKingdom().getBuildings()) {
+                for (final Building building : game.getKingdom().getBuildings()) {
                     // White / Red - Unexplored / Explored.
                     EmpireType tagColor = building.isExplored() ? EmpireType.ORCS_OF_KOR : EmpireType.SIRIANS;
                     if (building.isTemple()) {
@@ -96,7 +98,7 @@ public class StrategicMap extends StrategicMapComponent {
                 // Don't display the viewing window.
                 return;
             case ARMIES:
-                final List<ArmyGroup> groups = controller.getGame().getCurrentPlayer().getGroups();
+                final List<ArmyGroup> groups = game.getCurrentPlayer().getGroups();
                 groups.sort(null);
                 for (final ArmyGroup group : groups) {
                     // NOTE: W displays red tag shadows for LORD_BANE.
@@ -106,7 +108,7 @@ public class StrategicMap extends StrategicMapComponent {
                 // Don't display the viewing window.
                 return;
             case HEROES:
-                final List<Hero> heroes = controller.getGame().getCurrentPlayer().getHeroes();
+                final List<Hero> heroes = game.getCurrentPlayer().getHeroes();
                 heroes.sort(null);
                 for (final Hero hero : heroes) {
                     // NOTE: W displays red tag shadows for LORD_BANE.
@@ -133,7 +135,7 @@ public class StrategicMap extends StrategicMapComponent {
                 }
                 break;
             case PRODUCTION_TARGET:
-                for (final City city : controller.getGame().getCurrentPlayer().getCities()) {
+                for (final City city : game.getCurrentPlayer().getCities()) {
                     // White - Potential city.
                     EmpireType tagColor = EmpireType.SIRIANS;
                     if (city == sourceCity) {
