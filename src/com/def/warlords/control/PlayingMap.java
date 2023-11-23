@@ -193,6 +193,13 @@ public class PlayingMap extends Component {
 
     @Override
     public void paint(Graphics g) {
+        final SurrenderMode surrenderMode = controller.getSurrenderMode();
+        if (surrenderMode != null) {
+            g.setColor(Palette.BLACK);
+            g.fillRect(MAP_X, MAP_Y, MAP_WIDTH, MAP_HEIGHT);
+            Bitmap.drawSprite(g, 13, 14, 350, 312, surrenderMode.getBitmapInfo(), 0, 0);
+            return;
+        }
         if (razeMode) {
             Bitmap.drawSprite(g, MAP_X, MAP_Y, MAP_WIDTH, MAP_HEIGHT, BitmapInfo.RAZE, 0, 0);
             return;

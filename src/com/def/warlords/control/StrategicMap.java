@@ -2,7 +2,9 @@ package com.def.warlords.control;
 
 import com.def.warlords.control.common.StrategicMapComponent;
 import com.def.warlords.game.model.*;
+import com.def.warlords.graphics.Bitmap;
 import com.def.warlords.graphics.Cursor;
+import com.def.warlords.graphics.Palette;
 
 import java.awt.Graphics;
 import java.awt.event.MouseEvent;
@@ -59,6 +61,13 @@ public class StrategicMap extends StrategicMapComponent {
 
     @Override
     public void paint(Graphics g) {
+        final SurrenderMode surrenderMode = controller.getSurrenderMode();
+        if (surrenderMode != null) {
+            g.setColor(Palette.BLACK);
+            g.fillRect(408, 10, 224, 320);
+            Bitmap.drawSprite(g, 409, 14, 219, 312, surrenderMode.getBitmapInfo(), 352, 0);
+            return;
+        }
         super.paint(g);
         switch (mode) {
             case CITIES:

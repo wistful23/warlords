@@ -123,6 +123,10 @@ public class Kingdom implements Record {
         return neighborTiles;
     }
 
+    public int getCityCount() {
+        return cities.size();
+    }
+
     public List<City> getCities() {
         return new ArrayList<>(cities);
     }

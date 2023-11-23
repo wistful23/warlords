@@ -19,5 +19,9 @@ public interface GameController {
     void onAllHumanPlayersDestroyed();
 
     // Called when the human player destroyed all opponents.
-    void onVictory(int playerIndex, Player player);
+    void onHumanPlayerWon(int playerIndex, Player player);
+
+    // Called when the computer players are surrendered.
+    // Returns true if the peace offer is accepted.
+    boolean onComputerPlayersSurrendered();
 }

@@ -48,6 +48,7 @@ public class Game implements Record {
     private int currentTurnCount;
     // NOTE: Currently this AI option is unused.
     private boolean intenseCombat;
+    private boolean surrendered;
 
     // Non-recordable.
     private boolean computerMode;
@@ -111,13 +112,18 @@ public class Game implements Record {
         return computerMode;
     }
 
-    public void stopComputerMode() {
+    public void setAllPlayersHuman() {
         players.stream().filter(Util.not(Player::isDestroyed)).forEach(player -> player.setLevel(PlayerLevel.HUMAN));
     }
 
     public void nextPlayer(GameController gameController) {
-        // NOTE: W supports the surrender.
-        if (computerMode == isAnyHumanPlayerActive()) {
+        if (surrender()) {
+            if (gameController.onComputerPlayersSurrendered()) {
+                setAllPlayersHuman();
+            }
+            return;
+        }
+        if (computerMode == isAnyPlayerHuman()) {
             computerMode = !computerMode;
             if (computerMode && currentTurnCount > 0) {
                 gameController.onComputerModeTurned();
@@ -152,8 +158,8 @@ public class Game implements Record {
         if (!computerMode && playerDestroyed) {
             if (lastPlayerLeft && currentPlayer.isHuman()) {
                 // NOTE: W stops producing armies in all cities.
-                gameController.onVictory(currentPlayerIndex, currentPlayer);
-            } else if (!isAnyHumanPlayerActive()) {
+                gameController.onHumanPlayerWon(currentPlayerIndex, currentPlayer);
+            } else if (!isAnyPlayerHuman()) {
                 // NOTE: W calls this every turn after all the human players are destroyed.
                 gameController.onAllHumanPlayersDestroyed();
                 computerMode = true;
@@ -168,7 +174,32 @@ public class Game implements Record {
         currentPlayer.turn(controller, currentTurnCount);
     }
 
-    private boolean isAnyHumanPlayerActive() {
+    private boolean surrender() {
+        if (surrendered || currentPlayerIndex == -1) {
+            return false;
+        }
+        final Player currentPlayer = players.get(currentPlayerIndex);
+        if (!currentPlayer.isHuman() || currentPlayer.getCityCount() <= kingdom.getCityCount() / 2) {
+            return false;
+        }
+        int maxCityCount = 0;
+        for (final Player player : players) {
+            if (player.isDestroyed() || player == currentPlayer) {
+                continue;
+            }
+            if (player.isHuman()) {
+                return false;
+            }
+            maxCityCount = Math.max(maxCityCount, player.getCityCount());
+        }
+        // NOTE: W doesn't check the number of cities of the most powerful computer player.
+        if (maxCityCount == 0 || maxCityCount >= kingdom.getCityCount() / 5) {
+            return false;
+        }
+        return surrendered = true;
+    }
+
+    private boolean isAnyPlayerHuman() {
         return players.stream().filter(Util.not(Player::isDestroyed)).anyMatch(Player::isHuman);
     }
 
@@ -565,6 +596,7 @@ public class Game implements Record {
         out.writeInt(currentPlayerIndex);
         out.writeInt(currentTurnCount);
         out.writeBoolean(intenseCombat);
+        out.writeBoolean(surrendered);
     }
 
     @Override
@@ -574,5 +606,6 @@ public class Game implements Record {
         currentPlayerIndex = in.readInt();
         currentTurnCount = in.readInt();
         intenseCombat = in.readBoolean();
+        surrendered = in.readBoolean();
     }
 }

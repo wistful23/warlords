@@ -241,7 +241,7 @@ public class ComputerController implements PlayerController {
         if (stopComputerMode) {
             controller.showMessage("Hit ESC to stop computer play");
             // NOTE: W stops the computer mode only if ESC is pressed.
-            controller.getGame().stopComputerMode();
+            controller.getGame().setAllPlayersHuman();
             stopComputerMode = false;
         }
         controller.enableActiveContainer();

@@ -66,6 +66,8 @@ public class MainController extends JComponent
 
     private Game game;
 
+    private SurrenderMode surrenderMode;
+
     private int currentRecordIndex = -1;
 
     private boolean endDeliveryReport;
@@ -226,6 +228,10 @@ public class MainController extends JComponent
         }
         activeContainer = mainContainer;
         game.nextPlayer(this);
+    }
+
+    public SurrenderMode getSurrenderMode() {
+        return surrenderMode;
     }
 
     // Command Bar Controller.
@@ -483,11 +489,30 @@ public class MainController extends JComponent
     }
 
     @Override
-    public void onVictory(int playerIndex, Player player) {
+    public void onHumanPlayerWon(int playerIndex, Player player) {
         // NOTE: W plays the horn sound.
         showMessage("Player " + (playerIndex + 1) + ", " + player.getEmpire().getName() + ": You have won!");
         showMessage("You now rule all of Illuria ...");
         showMessage("You may now inspect your domain.");
+    }
+
+    @Override
+    public boolean onComputerPlayersSurrendered() {
+        surrenderMode = SurrenderMode.PEACE_OFFER;
+        showMessage("Your seneschal reports strangers at the gate!");
+        showMessage("Crawling towards you they humbly present a scroll");
+        // NOTE: W hides Info Screen.
+        if (new SurrenderResultForm(this).getResult()) {
+            surrenderMode = null;
+            showMessage("Under your enlightened rule ...");
+            showMessage("Illuria has entered a new golden age ...");
+            showMessage("You may now inspect your domain.");
+            return true;
+        }
+        surrenderMode = SurrenderMode.PEACE_OFFER_REFUSED;
+        showMessage("No Quarter !!!");
+        surrenderMode = null;
+        return false;
     }
 
     // Player Controller.
