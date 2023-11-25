@@ -4,7 +4,10 @@ import com.def.warlords.control.common.GameHelper;
 import com.def.warlords.control.form.*;
 import com.def.warlords.control.menu.MenuController;
 import com.def.warlords.control.menu.MenuStrip;
-import com.def.warlords.game.*;
+import com.def.warlords.game.ArmySelection;
+import com.def.warlords.game.Game;
+import com.def.warlords.game.GameController;
+import com.def.warlords.game.Player;
 import com.def.warlords.game.model.*;
 import com.def.warlords.graphics.Bitmap;
 import com.def.warlords.graphics.BitmapFactory;
@@ -16,7 +19,6 @@ import com.def.warlords.sound.SoundFactory;
 import com.def.warlords.sound.SoundInfo;
 import com.def.warlords.util.Logger;
 import com.def.warlords.util.Toggle;
-import com.def.warlords.util.Util;
 
 import javax.swing.JComponent;
 import javax.swing.Timer;
@@ -34,8 +36,7 @@ import static com.def.warlords.control.common.Dimensions.*;
  * @author wistful23
  * @version 1.23
  */
-public class MainController extends JComponent
-        implements FormController, MenuController, GameController, PlayerController {
+public class MainController extends JComponent implements FormController, MenuController, GameController {
 
     private final DeveloperController developerController = new DeveloperController(this);
 
@@ -62,6 +63,7 @@ public class MainController extends JComponent
     private final CommandBar commandBar = new CommandBar(this);
     private final MenuStrip menuStrip = new MenuStrip(this);
 
+    private final HumanController humanController = new HumanController(this);
     private final ComputerController computerController = new ComputerController(this);
 
     private Game game;
@@ -69,9 +71,6 @@ public class MainController extends JComponent
     private SurrenderMode surrenderMode;
 
     private int currentRecordIndex = -1;
-
-    private boolean endDeliveryReport;
-    private boolean endProductionReport;
 
     public MainController() {
         mainContainer.add(playingMap);
@@ -222,7 +221,7 @@ public class MainController extends JComponent
             return;
         }
         game = new Game(kingdom);
-        game.setControllers(this, computerController);
+        game.setControllers(humanController, computerController);
         for (final PlayerParams params : playerParams) {
             game.addPlayer(params.getEmpireType(), params.getLevel());
         }
@@ -282,7 +281,7 @@ public class MainController extends JComponent
         playingMap.reset();
         playingMap.setPos(recordData.getPosX(), recordData.getPosY());
         game = recordData.getGame();
-        game.setControllers(this, computerController);
+        game.setControllers(humanController, computerController);
         currentRecordIndex = index;
         // Ensure the main container is active.
         activeContainer = mainContainer;
@@ -513,404 +512,6 @@ public class MainController extends JComponent
         showMessage("No Quarter !!!");
         surrenderMode = null;
         return false;
-    }
-
-    // Player Controller.
-    @Override
-    public void beginTurn() {
-        endDeliveryReport = false;
-        endProductionReport = false;
-        showCapital();
-        final Player player = game.getCurrentPlayer();
-        showMessage(player.getEmpire().getName() + ": Click when ready!");
-        if (player.getGold() == 0) {
-            showMessage("Your treasuries are exhausted!");
-        }
-    }
-
-    @Override
-    public void playTurn() {
-    }
-
-    @Override
-    public String getFirstHeroName(City city, String initialName) {
-        strategicMap.setMode(StrategicMap.Mode.HERO_OFFER);
-        strategicMap.setSourceCity(city);
-        showMessage("In " + city.getName() + ", a hero emerges!");
-        // NOTE: W doesn't show the city on Strategic Map when requesting the hero name.
-        final String name = new HeroNameResultForm(this, initialName).getResult();
-        strategicMap.setMode(StrategicMap.Mode.CITIES);
-        return name;
-    }
-
-    @Override
-    public String getHeroName(City city, int cost, String initialName) {
-        // NOTE: W hides Info Screen.
-        strategicMap.setMode(StrategicMap.Mode.HERO_OFFER);
-        strategicMap.setSourceCity(city);
-        String name = null;
-        if (new HeroOfferResultForm(this, city, cost).getResult()) {
-            name = new HeroNameResultForm(this, initialName).getResult();
-        }
-        strategicMap.setMode(StrategicMap.Mode.CITIES);
-        return name;
-    }
-
-    @Override
-    public void onAlliesBrought(int count) {
-        showMessage("And the hero brings " + count + " allies!");
-    }
-
-    @Override
-    public void reportDelivery(City sourceCity, City targetCity) {
-        if (endDeliveryReport) {
-            return;
-        }
-        strategicMap.setMode(StrategicMap.Mode.DELIVERY_REPORT);
-        strategicMap.setSourceCity(sourceCity);
-        strategicMap.setTargetCity(targetCity);
-        infoScreen.setVisible(false);
-        final ReportResult result = new DeliveryReportResultForm(this, targetCity).getResult();
-        infoScreen.setVisible(true);
-        endDeliveryReport = result == ReportResult.END_REPORT;
-        strategicMap.setMode(StrategicMap.Mode.CITIES);
-    }
-
-    @Override
-    public boolean reportProduction(City city) {
-        if (endProductionReport) {
-            return true;
-        }
-        strategicMap.setMode(StrategicMap.Mode.PRODUCTION_REPORT);
-        strategicMap.setSourceCity(city);
-        infoScreen.setVisible(false);
-        final ReportResult result = new ProductionReportResultForm(this, city).getResult();
-        infoScreen.setVisible(true);
-        endProductionReport = result == ReportResult.END_REPORT;
-        strategicMap.setMode(StrategicMap.Mode.CITIES);
-        return result != ReportResult.NO;
-    }
-
-    @Override
-    public void reportProductionFailure(City city) {
-        // NOTE: W always displays this message even if 'End Turn' is pressed. Do the same.
-        // NOTE: W displays the empty Strategic Map.
-        strategicMap.setMode(StrategicMap.Mode.PRODUCTION_REPORT);
-        strategicMap.setSourceCity(city);
-        if (city.getCurrentFactory().getType().isNavy()) {
-            if (city.isPortOccupiedByEnemy()) {
-                showMessage(city.getName() + ": Port occupied by enemy! Cannot produce.");
-            } else if (city.isPortFull()) {
-                showMessage(city.getName() + ": Port full. No room to produce.");
-            } else {
-                throw new IllegalStateException("Can't detect navy production failure");
-            }
-        } else if (city.isFull()) {
-            showMessage(city.getName() + ": City full. No room to produce.");
-        } else {
-            throw new IllegalStateException("Can't detect production failure");
-        }
-        strategicMap.setMode(StrategicMap.Mode.CITIES);
-    }
-
-    @Override
-    public void reportNoGoldForProducing() {
-        // NOTE: W displays this message once after 'End Turn' is pressed.
-        if (endProductionReport) {
-            return;
-        }
-        // NOTE: W displays the empty Strategic Map.
-        showMessage("You do not have enough gold!");
-    }
-
-    @Override
-    public boolean isImproveCityDefenceApproved(City city) {
-        return new ImproveDefenceResultForm(this, city).getResult();
-    }
-
-    @Override
-    public void onImproveCityDefenceStatus(BuildStatus status) {
-        switch (status) {
-            case PROHIBITED:
-                showMessage("Your defences are already legendary!");
-                return;
-            case NOT_ENOUGH_GOLD:
-                showMessage("You do not have sufficient gold!");
-                return;
-            case COMPLETED:
-                showMessage("You have improved your defences!");
-                return;
-        }
-        throw new IllegalStateException("Unknown status: " + status);
-    }
-
-    @Override
-    public boolean isBuildTowerApproved() {
-        return new BuildTowerResultForm(this, game.getCurrentPlayer()).getResult();
-    }
-
-    @Override
-    public void onBuildTowerStatus(BuildStatus status) {
-        switch (status) {
-            case PROHIBITED:
-                showMessage("Towers must be built on plains!");
-                return;
-            case NOT_ENOUGH_GOLD:
-                showMessage("You do not have sufficient gold!");
-                return;
-            case COMPLETED:
-                showMessage("You have built a tower!");
-                return;
-        }
-        throw new IllegalStateException("Unknown status: " + status);
-    }
-
-    @Override
-    public boolean isRazeApproved(Tile tile) {
-        if (!tile.isCity() && !tile.isTower()) {
-            showMessage("You can only raze cities and towers");
-            return false;
-        }
-        return new RazeResultForm(this).getResult();
-    }
-
-    @Override
-    public void onCityRazed(City city) {
-        playingMap.setRazeMode(true);
-        new SoundForm(this, SoundInfo.WAR).activate();
-        // NOTE: W displays the message when playing the sound.
-        showMessage("Your troops ravage " + city.getName() + "!");
-        showMessage(city.getName() + " is in ruins!");
-        playingMap.setRazeMode(false);
-    }
-
-    @Override
-    public void onTowerRazed() {
-        showMessage("The tower is destroyed!");
-    }
-
-    @Override
-    public void onTerrainSearch(List<Artifact> artifacts) {
-        if (artifacts.isEmpty()) {
-            showMessage("You have found nothing!");
-        } else {
-            for (final Artifact artifact : artifacts) {
-                showMessage("You have found: " + artifact.getName());
-            }
-        }
-    }
-
-    @Override
-    public void onTempleFound(int count) {
-        showMessage("You have found a temple...");
-        if (count == 0) {
-            showMessage("You have already received our blessing!");
-        } else if (count == 1) {
-            showMessage("You have been blessed!  Seek more blessings in far temples!");
-        } else {
-            showMessage(count + " Armies have been blessed!  Seek more blessings in far temples!");
-        }
-    }
-
-    @Override
-    public void onLibraryFound() {
-        showMessage("You enter a great Library...");
-        showMessage("Searching through the books, you find...");
-        switch (Util.randomInt(3)) {
-            case 0:
-                // A piece of ancient wisdom.
-                showMessage(Kingdom.getRandomWisdomNote());
-                break;
-            case 1:
-                // Crypt information.
-                final Crypt crypt = game.getKingdom().getRandomCrypt();
-                if (crypt.isExplored()) {
-                    showMessage(crypt.getName() + " is uninhabited!");
-                } else {
-                    showMessage("A " + crypt.getGuardType().getName() + " lives in " + crypt.getName() + "!");
-                }
-                break;
-            case 2:
-                // Artifact information.
-                final Artifact artifact = game.getKingdom().getRandomArtifact();
-                if (artifact.getHero() != null) {
-                    showMessage("The " + artifact.getName() + " is owned by a hero!");
-                } else if (artifact.getTile() != null) {
-                    // BUG: W always displays the land the library belongs to.
-                    showMessage(
-                            "The " + artifact.getName() + " is lying in " + Kingdom.getLands(artifact.getTile()) + "!");
-                } else if (artifact.getCrypt() != null) {
-                    showMessage("The " + artifact.getName() + " is in the " + artifact.getCrypt().getName() + "!");
-                } else {
-                    // NOTE: Can't reproduce it in W. We also can't reach this state.
-                    showMessage("The " + artifact.getName() + " is lost from Illuria!");
-                }
-                break;
-            default:
-                Util.fail();
-        }
-    }
-
-    @Override
-    public boolean onSageFound(int gold) {
-        if (gold > 0) {
-            showMessage("You are greeted warmly...");
-            showMessage("... the Seer gives you a gem...");
-            showMessage("...worth " + gold + " gp");
-        }
-        // NOTE: W doesn't display Info Screen for first search.
-        final SageResult result = new SageResultForm(this).getResult();
-        if (result == SageResult.CANCEL) {
-            return false;
-        }
-        final Kingdom kingdom = game.getKingdom();
-        if (result == SageResult.LOCATIONS) {
-            // Building information.
-            final Building building =
-                    new ItemResultForm<>(this, null, kingdom.getBuildings(), Building::getName).getResult();
-            if (building == null) {
-                return false;
-            }
-            if (building.isCrypt()) {
-                if (building.isExplored()) {
-                    // NOTE: W displays 'Nothing evil lives here!' for explored crypt except allies.
-                    showMessage("It has already been explored!");
-                    // NOTE: W displays content of explored crypt except artifacts.
-                } else {
-                    final Crypt crypt = (Crypt) building;
-                    showMessage("It is inhabited by a " + crypt.getGuardType().getName() + "!");
-                    switch (crypt.getCryptType()) {
-                        case ALLIES:
-                            showMessage("Friendship is possible!");
-                            break;
-                        case ARTIFACT:
-                            showMessage("An ancient artifact is there!");
-                            showMessage("The " + crypt.getArtifact().getName() + "!");
-                            break;
-                        case ALTAR:
-                            showMessage("An altar to an ancient God resides there");
-                            break;
-                        case THRONE:
-                            showMessage("A throne from days past sits there gleaming!");
-                            break;
-                        case GOLD:
-                            showMessage("I believe there is much gold there!");
-                    }
-                }
-            } else {
-                showMessage("Nothing evil lives here!");
-                if (building.isTemple()) {
-                    showMessage("Blessed is he who visits this place!");
-                } else if (building.isLibrary()) {
-                    showMessage("It is a truly magnificent collection of books!");
-                } else if (building.isSage()) {
-                    showMessage("Ahhh grasshopper! A place to seek wisdom!");
-                }
-            }
-            return true;
-        }
-        if (result == SageResult.ITEMS) {
-            // Artifact information.
-            final Artifact artifact =
-                    new ItemResultForm<>(this, null, kingdom.getArtifacts(), Artifact::getName).getResult();
-            if (artifact == null) {
-                return false;
-            }
-            showMessage("The " + artifact.getName() + " can be found ...");
-            final Hero hero = artifact.getHero();
-            final Tile tile = artifact.getTile();
-            final Crypt crypt = artifact.getCrypt();
-            if (hero != null) {
-                final City city = GameHelper.getNearest(kingdom.getCities(), hero);
-                showMessage("... near " + city.getName() + " with a hero of the " + hero.getEmpire().getName());
-            } else if (tile != null) {
-                final City city = GameHelper.getNearest(kingdom.getCities(), tile);
-                // Razed city is NEUTRAL.
-                final EmpireType empireType =
-                        city.getEmpire() != null ? city.getEmpire().getType() : EmpireType.NEUTRAL;
-                showMessage("... in the vicinity of the " + empireType.getName() + " city of " + city.getName());
-            } else if (crypt != null) {
-                showMessage("... at " + crypt.getName() + "!");
-            } else {
-                // NOTE: Can't reproduce it in W. We also can't reach this state.
-                showMessage("... no more in the lands of Illuria!");
-            }
-            return true;
-        }
-        Util.fail();
-        return false;
-    }
-
-    public void onAlliesJoined(Hero hero, GuardType guard, int count) {
-        playingMap.setSearchMode(PlayingMap.SearchMode.SEARCH);
-        new SoundForm(this, SoundInfo.DRAMATIC).activate();
-        if (count > 1) {
-            showMessage(count + " " + guard.getName() + "s offer to join " + hero.getName());
-        } else {
-            showMessage("A " + guard.getName() + " offers to join " + hero.getName());
-        }
-        playingMap.setSearchMode(PlayingMap.SearchMode.NONE);
-    }
-
-    public void onGuardFight(Hero hero, GuardType guard, boolean slain) {
-        playingMap.setSearchMode(PlayingMap.SearchMode.SEARCH);
-        new SoundForm(this, SoundInfo.DRAMATIC).activate();
-        showMessage(hero.getName() + " encounters a " + guard.getName() + "!");
-        if (slain) {
-            // NOTE: W doesn't display a hero under the death icon.
-            playingMap.setSearchMode(PlayingMap.SearchMode.DEATH);
-            showMessage("...and is slain by it!");
-        } else {
-            showMessage("...and is victorious!");
-        }
-        playingMap.setSearchMode(PlayingMap.SearchMode.NONE);
-    }
-
-    public void onArtifactFound(Hero hero, Artifact artifact) {
-        showMessage(hero.getName() + " has found the " + artifact.getName() + "!");
-    }
-
-    public boolean onAltarFound() {
-        // NOTE: W hides Info Screen.
-        return new AltarResultForm(this).getResult();
-    }
-
-    public void onAltarResult(Hero hero, boolean ignored) {
-        if (ignored) {
-            showMessage("The Gods ignore " + hero.getName());
-        } else {
-            showMessage("The Gods hear! " + hero.getName() + "'s strength increases to " + hero.getStrength() + "!");
-        }
-    }
-
-    public boolean onThroneFound() {
-        // NOTE: W hides Info Screen.
-        return new ThroneResultForm(this).getResult();
-    }
-
-    public void onThroneResult(Hero hero, boolean downgraded) {
-        if (downgraded) {
-            showMessage(hero.getName() + "'s strength decreases to " + hero.getStrength() + "!");
-        } else {
-            showMessage(hero.getName() + "'s strength increases to " + hero.getStrength() + "!");
-        }
-    }
-
-    public void onGoldFound(Hero hero, int value) {
-        showMessage(hero.getName() + " has found " + value + " gp!");
-    }
-
-    public void onCombat(ArmyList attackingArmies, ArmyList defendingArmies, Tile tile, List<Boolean> protocol) {
-        playingMap.setCombatTile(tile);
-        new SoundForm(this, SoundInfo.WAR).activate();
-        infoScreen.setVisible(false);
-        new CombatForm(this, game, attackingArmies, defendingArmies, tile, protocol).activate();
-        playingMap.setCombatTile(null);
-        infoScreen.setVisible(true);
-    }
-
-    public void selectProduction(City city) {
-        activateProductionScreen(city);
     }
 
     // Main paint.
