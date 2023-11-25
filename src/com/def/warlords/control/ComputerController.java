@@ -40,6 +40,55 @@ public class ComputerController implements PlayerController {
     }
 
     @Override
+    public void beginTurn() {
+        if (!controller.disableActiveContainer()) {
+            throw new IllegalStateException("Active container is already disabled");
+        }
+        computer = new Computer(controller.getGame());
+        player = controller.getGame().getCurrentPlayer();
+    }
+
+    @Override
+    public void playTurn() {
+        controller.showCapital();
+        final Timer timer = controller.createTimer(DELAY_TURN, e -> moveNextGroup(true));
+        timer.setRepeats(false);
+        timer.start();
+    }
+
+    @Override
+    public String getFirstHeroName(City city, String initialName) {
+        return initialName;
+    }
+
+    @Override
+    public String getHeroName(City city, int cost, String initialName) {
+        return initialName;
+    }
+
+    @Override
+    public void onAlliesBrought(int count) {
+    }
+
+    @Override
+    public void reportDelivery(City sourceCity, City targetCity) {
+    }
+
+    @Override
+    public boolean reportProduction(City city) {
+        // Never continue producing.
+        return false;
+    }
+
+    @Override
+    public void reportProductionFailure(City city) {
+    }
+
+    @Override
+    public void reportNoGoldForProducing() {
+    }
+
+    @Override
     public boolean isImproveCityDefenceApproved(City city) {
         // Always improve the city defence.
         return true;
@@ -129,66 +178,17 @@ public class ComputerController implements PlayerController {
 
     @Override
     public void onCombat(ArmyList attackingArmies, ArmyList defendingArmies, Tile tile, List<Boolean> protocol) {
-        if (!defendingArmies.getEmpire().isNeutral()) {
-            final InfoScreen infoScreen = controller.getInfoScreen();
-            infoScreen.setVisible(false);
-            new CombatForm(controller, controller.getGame(), attackingArmies, defendingArmies, tile, protocol)
-                    .activate();
-            infoScreen.setVisible(true);
+        if (defendingArmies.getEmpire().isNeutral()) {
+            return;
         }
+        final InfoScreen infoScreen = controller.getInfoScreen();
+        infoScreen.setVisible(false);
+        new CombatForm(controller, controller.getGame(), attackingArmies, defendingArmies, tile, protocol).activate();
+        infoScreen.setVisible(true);
     }
 
     @Override
     public void selectProduction(City city) {
-    }
-
-    @Override
-    public void beginTurn() {
-        if (!controller.disableActiveContainer()) {
-            throw new IllegalStateException("Active container is already disabled");
-        }
-        computer = new Computer(controller.getGame());
-        player = controller.getGame().getCurrentPlayer();
-    }
-
-    @Override
-    public void playTurn() {
-        controller.showCapital();
-        final Timer timer = controller.createTimer(DELAY_TURN, e -> moveNextGroup(true));
-        timer.setRepeats(false);
-        timer.start();
-    }
-
-    @Override
-    public String getFirstHeroName(City city, String initialName) {
-        return initialName;
-    }
-
-    @Override
-    public String getHeroName(City city, int cost, String initialName) {
-        return initialName;
-    }
-
-    @Override
-    public void onAlliesBrought(int count) {
-    }
-
-    @Override
-    public void reportDelivery(City sourceCity, City targetCity) {
-    }
-
-    @Override
-    public boolean reportProduction(City city) {
-        // Never continue producing.
-        return false;
-    }
-
-    @Override
-    public void reportProductionFailure(City city) {
-    }
-
-    @Override
-    public void reportNoGoldForProducing() {
     }
 
     private void moveNextGroup(boolean prevGroupFinished) {
