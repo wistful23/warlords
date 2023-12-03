@@ -50,7 +50,9 @@ public class ComputerController implements PlayerController {
 
     @Override
     public void playTurn() {
-        controller.showCapital();
+        if (controller.isCurrentPlayerObserved()) {
+            controller.showCapital();
+        }
         final Timer timer = controller.createTimer(DELAY_TURN, e -> moveNextGroup(true));
         timer.setRepeats(false);
         timer.start();
@@ -178,7 +180,8 @@ public class ComputerController implements PlayerController {
 
     @Override
     public void onCombat(ArmyList attackingArmies, ArmyList defendingArmies, Tile tile, List<Boolean> protocol) {
-        if (defendingArmies.getEmpire().isNeutral()) {
+        // NOTE: W displays the combat if the current player attacks a human player.
+        if (!controller.isCurrentPlayerObserved() || defendingArmies.getEmpire().isNeutral()) {
             return;
         }
         final InfoScreen infoScreen = controller.getInfoScreen();

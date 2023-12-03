@@ -51,6 +51,8 @@ public class MainController extends JComponent implements FormController, MenuCo
 
     private final Container mainContainer = new Container(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
+    private final Toggle observeToggle = new Toggle(true);
+
     // A - Playing Map
     // B - Strategic Map
     // C - Info/Production Screen
@@ -229,6 +231,14 @@ public class MainController extends JComponent implements FormController, MenuCo
         game.nextPlayer(this);
     }
 
+    public boolean isCurrentPlayerObserved() {
+        if (observeToggle.isOn()) {
+            return true;
+        }
+        final Player player = game.getCurrentPlayer();
+        return player.isHuman() || player.isObserved();
+    }
+
     public SurrenderMode getSurrenderMode() {
         return surrenderMode;
     }
@@ -248,7 +258,7 @@ public class MainController extends JComponent implements FormController, MenuCo
 
     @Override
     public Toggle getObserveToggle() {
-        return new Toggle(true);
+        return observeToggle;
     }
 
     @Override
@@ -459,6 +469,7 @@ public class MainController extends JComponent implements FormController, MenuCo
     public void onComputerModeTurned() {
         showMessage("And so the war continues...");
         showMessage("...without you!");
+        observeToggle.turnOn();
     }
 
     @Override
@@ -485,6 +496,7 @@ public class MainController extends JComponent implements FormController, MenuCo
         showMessage("will continue without you ...");
         showMessage("Hit 'ESC' to stop the war and ...");
         showMessage("visit the sites of your old battles.");
+        observeToggle.turnOn();
     }
 
     @Override

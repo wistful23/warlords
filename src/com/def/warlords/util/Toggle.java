@@ -20,6 +20,10 @@ public class Toggle {
         return !on;
     }
 
+    public void turnOn() {
+        on = true;
+    }
+
     public void toggle() {
         on = !on;
     }

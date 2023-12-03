@@ -149,9 +149,13 @@ public class PlayingMap extends Component {
             return;
         }
         selectedTile = null;
-        startArmyFrameAnimation();
-        selection.selectAll(group);
-        centerArmySelection();
+        if (controller.isCurrentPlayerObserved()) {
+            startArmyFrameAnimation();
+            selection.selectAll(group);
+            centerArmySelection();
+        } else {
+            selection.selectAll(group);
+        }
     }
 
     public void nextArmyGroup(Army.State prevArmyState) {
@@ -170,19 +174,35 @@ public class PlayingMap extends Component {
         if (path == null) {
             return false;
         }
-        final boolean disabled = controller.disableActiveContainer();
-        controller.createTimer(DELAY_ANIMATION, actionEvent -> {
-            final boolean finished = path.isEmpty();
-            if (finished || !move(path.remove())) {
-                ((Timer) actionEvent.getSource()).stop();
-                if (disabled) {
-                    controller.enableActiveContainer();
+        if (controller.isCurrentPlayerObserved()) {
+            final boolean disabled = controller.disableActiveContainer();
+            controller.createTimer(DELAY_ANIMATION, e -> {
+                final boolean finished = path.isEmpty();
+                if (finished || !move(path.remove())) {
+                    ((Timer) e.getSource()).stop();
+                    if (disabled) {
+                        controller.enableActiveContainer();
+                    }
+                    if (callback != null) {
+                        callback.accept(finished);
+                    }
                 }
-                if (callback != null) {
-                    callback.accept(finished);
+            }).start();
+        } else {
+            final Consumer<Boolean> callbackLater = finished -> {
+                final Timer timer = controller.createTimer(0, e -> callback.accept(finished));
+                timer.setRepeats(false);
+                timer.start();
+            };
+            boolean finished = true;
+            for (final Tile to : path) {
+                if (!controller.getGame().move(selection, to)) {
+                    finished = false;
+                    break;
                 }
             }
-        }).start();
+            callbackLater.accept(finished);
+        }
         return true;
     }
 
