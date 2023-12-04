@@ -253,7 +253,9 @@ public class MainController extends JComponent implements FormController, MenuCo
     // Menu Controller.
     @Override
     public void about() {
+        infoScreen.setVisible(false);
         new AboutForm(this).activate();
+        infoScreen.setVisible(true);
     }
 
     @Override

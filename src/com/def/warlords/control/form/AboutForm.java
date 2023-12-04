@@ -1,5 +1,7 @@
 package com.def.warlords.control.form;
 
+import com.def.warlords.control.common.Dimensions;
+import com.def.warlords.graphics.FontFactory;
 import com.def.warlords.gui.GrayPanel;
 import com.def.warlords.gui.Label;
 import com.def.warlords.gui.MultiLineLabel;
@@ -34,5 +36,9 @@ public class AboutForm extends Form {
                 "Justin Weaver and TIM"
         }));
         add(new TextButton(273, 280, " Cancel ", source -> deactivate()));
+        // The remake info.
+        add(new Label(0, 346, Dimensions.SCREEN_WIDTH, Label.Alignment.CENTER, "Authentic remake by wistful23"));
+        add(new Label(0, 370, Dimensions.SCREEN_WIDTH, FontFactory.getInstance().getMonospacedFont(),
+                Label.Alignment.CENTER, "(github.com/wistful23/warlords)"));
     }
 }
