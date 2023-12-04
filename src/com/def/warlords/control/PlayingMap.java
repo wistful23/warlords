@@ -43,9 +43,10 @@ public class PlayingMap extends Component {
 
     private static final int[] num_dx = {-1, 0, 1, -1, 0, 1, -1, 0, 1};
     private static final int[] num_dy = {1, 1, 1, 0, 0, 0, -1, -1, -1};
-
     private static final int[] arrow_dx = {-1, 0, 1, 0};
     private static final int[] arrow_dy = {0, -1, 0, 1};
+    private static final int[] arrow_kp_dx = {0, 0, -1, 1};
+    private static final int[] arrow_kp_dy = {-1, 1, 0, 0};
 
     private final MainController controller;
 
@@ -366,9 +367,15 @@ public class PlayingMap extends Component {
         if (keyCode >= KeyEvent.VK_1 && keyCode <= KeyEvent.VK_9) {
             dx = num_dx[keyCode - KeyEvent.VK_1];
             dy = num_dy[keyCode - KeyEvent.VK_1];
+        } else if (keyCode >= KeyEvent.VK_NUMPAD1 && keyCode <= KeyEvent.VK_NUMPAD9) {
+            dx = num_dx[keyCode - KeyEvent.VK_NUMPAD1];
+            dy = num_dy[keyCode - KeyEvent.VK_NUMPAD1];
         } else if (keyCode >= KeyEvent.VK_LEFT && keyCode <= KeyEvent.VK_DOWN) {
             dx = arrow_dx[keyCode - KeyEvent.VK_LEFT];
             dy = arrow_dy[keyCode - KeyEvent.VK_LEFT];
+        } else if (keyCode >= KeyEvent.VK_KP_UP && keyCode <= KeyEvent.VK_KP_RIGHT) {
+            dx = arrow_kp_dx[keyCode - KeyEvent.VK_KP_UP];
+            dy = arrow_kp_dy[keyCode - KeyEvent.VK_KP_UP];
         }
         // Move map.
         if (selection.isEmpty()) {
