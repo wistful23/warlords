@@ -144,7 +144,7 @@ public class PlayingMap extends Component {
         selection.getSelectedArmies().updateState(state);
     }
 
-    public void selectArmyGroup(ArmyGroup group) {
+    public void selectArmyGroup(ArmyGroup group, boolean activeOnly) {
         if (group == null) {
             selection.reset();
             return;
@@ -152,10 +152,10 @@ public class PlayingMap extends Component {
         selectedTile = null;
         if (controller.isCurrentPlayerObserved()) {
             startArmyFrameAnimation();
-            selection.selectAll(group);
+            selection.selectAll(group, activeOnly);
             centerArmySelection();
         } else {
-            selection.selectAll(group);
+            selection.selectAll(group, activeOnly);
         }
     }
 
@@ -164,7 +164,7 @@ public class PlayingMap extends Component {
             return;
         }
         updateArmySelection(prevArmyState);
-        selectArmyGroup(controller.getGame().getCurrentPlayer().nextArmyGroup());
+        selectArmyGroup(controller.getGame().getCurrentPlayer().nextArmyGroup(), false);
     }
 
     public boolean moveArmySelection(Tile tile, boolean respectEnemies, Consumer<Boolean> callback) {
@@ -436,7 +436,7 @@ public class PlayingMap extends Component {
         if (group != null && group.getEmpire() == empire) {
             startArmyFrameAnimation();
             if (e.isAltDown() || e.getClickCount() > 1) {
-                selection.selectAll(group);
+                selection.selectAll(group, false);
             } else {
                 selection.select(group);
             }

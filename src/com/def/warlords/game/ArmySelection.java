@@ -48,11 +48,16 @@ public class ArmySelection {
         }
     }
 
-    public void selectAll(ArmyGroup group) {
+    public void selectAll(ArmyGroup group, boolean activeOnly) {
         if (group == null) {
             throw new IllegalArgumentException("Select group is null");
         }
-        reset(group, true);
+        if (activeOnly) {
+            reset(group, false);
+            selectActive();
+        } else {
+            reset(group, true);
+        }
     }
 
     // Moves the selected armies to `tile` and updates this selection.
@@ -81,6 +86,11 @@ public class ArmySelection {
             selectedGroup = group;
         }
         selectedGroup.setSelected(selected);
+    }
+
+    // Called iff all armies are unselected.
+    private void selectActive() {
+        selectedGroup.getArmies().stream().filter(Army::isActive).forEach(army -> army.setSelected(true));
     }
 
     // Called iff all armies are unselected.

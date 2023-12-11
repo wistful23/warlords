@@ -217,24 +217,22 @@ public class ComputerController implements PlayerController {
                     hero.takeArtifact(artifact);
                 }
             }
-            if (group.isFullyActive()) {
-                if (searchBuildings && hero != null) {
-                    // Search the building.
-                    final Building building = tile.getBuilding();
-                    if (building != null && !building.isExplored()) {
-                        playingMap.selectArmyGroup(group);
-                        controller.getGame().search(playingMap.getArmySelection());
-                    }
+            if (searchBuildings && hero != null && hero.isActive()) {
+                // Search the building.
+                final Building building = tile.getBuilding();
+                if (building != null && !building.isExplored()) {
+                    playingMap.selectArmyGroup(group, true);
+                    controller.getGame().search(playingMap.getArmySelection());
                 }
-                if (tile.isCity() == moveCityGroup) {
-                    playingMap.selectArmyGroup(group);
-                    final Tile target = computer.findTarget(playingMap.getArmySelection(), searchBuildings);
-                    if (target != null) {
-                        Util.assertTrue(playingMap.moveArmySelection(target, false, this::moveNextGroup));
-                        return true;
-                    }
-                    playingMap.updateArmySelection(Army.State.QUIT);
+            }
+            if (tile.isCity() == moveCityGroup && group.isActive()) {
+                playingMap.selectArmyGroup(group, true);
+                final Tile target = computer.findTarget(playingMap.getArmySelection(), searchBuildings);
+                if (target != null) {
+                    Util.assertTrue(playingMap.moveArmySelection(target, false, this::moveNextGroup));
+                    return true;
                 }
+                playingMap.updateArmySelection(Army.State.QUIT);
             }
         }
         return false;
