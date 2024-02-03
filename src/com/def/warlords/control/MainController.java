@@ -572,22 +572,27 @@ public class MainController extends JComponent implements FormController, MenuCo
             if (computerController.processKeyEvent(e)) {
                 return;
             }
-            if (activeForm != null) {
-                activeForm.keyPressed(e);
-            } else if (activeContainer != null) {
-                activeContainer.keyPressed(e);
+            if (mouse.isReleased()) {
+                if (activeForm != null) {
+                    activeForm.keyPressed(e);
+                } else if (activeContainer != null) {
+                    activeContainer.keyPressed(e);
+                }
             }
-            mouse.updateEvent(e.getModifiersEx());
+            mouse.updateKeyModifiers(e.getModifiersEx());
         }
 
         @Override
         public void keyReleased(KeyEvent e) {
             repaint();
-            mouse.updateEvent(e.getModifiersEx());
+            mouse.updateKeyModifiers(e.getModifiersEx());
         }
     }
 
     private final class Mouse extends MouseAdapter {
+
+        private static final int BUTTON_DOWN_MASK =
+                MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.BUTTON2_DOWN_MASK | MouseEvent.BUTTON3_DOWN_MASK;
 
         private MouseEvent e;
 
@@ -596,6 +601,10 @@ public class MainController extends JComponent implements FormController, MenuCo
             setCursor(getToolkit().createCustomCursor(emptyImage, new Point(), ""));
             addMouseListener(this);
             addMouseMotionListener(this);
+        }
+
+        public boolean isReleased() {
+            return e == null || (e.getModifiersEx() & BUTTON_DOWN_MASK) == 0;
         }
 
         public void paint(Graphics g) {
@@ -611,10 +620,11 @@ public class MainController extends JComponent implements FormController, MenuCo
             cursor.draw(g, e.getPoint());
         }
 
-        public void updateEvent(int modifiers) {
+        public void updateKeyModifiers(int modifiers) {
             if (e != null) {
-                e = new MouseEvent((Component) e.getSource(), e.getID(), e.getWhen(), modifiers, e.getX(), e.getY(),
-                        e.getClickCount(), e.isPopupTrigger());
+                e = new MouseEvent((Component) e.getSource(), e.getID(), e.getWhen(),
+                        e.getModifiersEx() & BUTTON_DOWN_MASK | modifiers,
+                        e.getX(), e.getY(), e.getClickCount(), e.isPopupTrigger());
             }
         }
 
