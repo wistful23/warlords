@@ -417,7 +417,7 @@ public class PlayingMap extends Component {
             return;
         }
         // Reset.
-        if (e.getButton() == MouseEvent.BUTTON3) {
+        if (!selection.isEmpty() && (e.isControlDown() || e.getButton() == MouseEvent.BUTTON3)) {
             selection.reset();
             return;
         }

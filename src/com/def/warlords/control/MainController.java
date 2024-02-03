@@ -566,6 +566,7 @@ public class MainController extends JComponent implements FormController, MenuCo
         @Override
         public void keyPressed(KeyEvent e) {
             repaint();
+            mouse.updateKeyModifiers(e.getModifiersEx());
             if (developerController.processKeyEvent(e)) {
                 return;
             }
@@ -579,7 +580,6 @@ public class MainController extends JComponent implements FormController, MenuCo
                     activeContainer.keyPressed(e);
                 }
             }
-            mouse.updateKeyModifiers(e.getModifiersEx());
         }
 
         @Override
