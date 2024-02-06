@@ -38,6 +38,9 @@ public class Game implements Record {
 
     private static final int INDEX_SHIFT = 3;
 
+    private static final int MAX_VALUE_D10 = 10;
+    private static final int MAX_VALUE_D12 = 12;
+
     private Kingdom kingdom;
     private final List<Player> players = new ArrayList<>(MAX_PLAYER_COUNT);
 
@@ -46,7 +49,6 @@ public class Game implements Record {
 
     private int currentPlayerIndex = -1;
     private int currentTurnCount;
-    // NOTE: Currently this AI option is unused.
     private boolean intenseCombat;
     private boolean surrendered;
 
@@ -559,18 +561,19 @@ public class Game implements Record {
             Logger.info("AS=" + attackingArmyStrength + " AH=" + attackingArmyHealth +
                     " vs DS=" + defendingArmyStrength + " DH=" + defendingArmyHealth);
             while (attackingArmyHealth > 0 && defendingArmyHealth > 0) {
-                final int attackingRoll = Util.randomInt(Army.MAX_STRENGTH + 1) + 1;
-                final int defendingRoll = Util.randomInt(Army.MAX_STRENGTH + 1) + 1;
+                final int maxRollValue = intenseCombat ? MAX_VALUE_D12 : MAX_VALUE_D10;
+                final int attackingRollValue = Util.randomInt(maxRollValue) + 1;
+                final int defendingRollValue = Util.randomInt(maxRollValue) + 1;
                 String resultLog = "draw";
-                if (attackingRoll > defendingArmyStrength && defendingRoll <= attackingArmyStrength) {
+                if (attackingRollValue > defendingArmyStrength && defendingRollValue <= attackingArmyStrength) {
                     --defendingArmyHealth;
                     resultLog = "A hits";
                 }
-                if (defendingRoll > attackingArmyStrength && attackingRoll <= defendingArmyStrength) {
+                if (defendingRollValue > attackingArmyStrength && attackingRollValue <= defendingArmyStrength) {
                     --attackingArmyHealth;
                     resultLog = "D hits";
                 }
-                Logger.info("AR=" + attackingRoll + " DR=" + defendingRoll + " " + resultLog);
+                Logger.info("AR=" + attackingRollValue + " DR=" + defendingRollValue + " " + resultLog);
             }
             Logger.info((defendingArmyHealth > 0 ? attackingArmies.get(attackingArmyIndex - 1).getName()
                                                  : defendingArmies.get(defendingArmyIndex - 1).getName()) + " KILLED");
