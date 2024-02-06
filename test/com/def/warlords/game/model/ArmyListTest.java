@@ -253,8 +253,8 @@ public class ArmyListTest {
         assertEquals(armies.afcm(city), 5);
         hero2.takeArtifact(artifact2);
         Collections.addAll(armies, griffins, dragons);
-        assertEquals(armies.afcm(forest), 8);
-        assertEquals(armies.afcm(hill), 11);
+        assertEquals(armies.afcm(forest), 7);
+        assertEquals(armies.afcm(hill), 10);
     }
 
     @Test
@@ -277,17 +277,20 @@ public class ArmyListTest {
     }
 
     @Test
-    public void afcmFromManual() {
+    public void attackFromManual() {
         final ArmyList armies = new ArmyList(4, new Empire(EmpireType.GREY_DWARVES));
         armies.add(new Army(ArmyType.DWARVES, "Dwarves1", 2, 4, 9));
         armies.add(new Army(ArmyType.DWARVES, "Dwarves2", 2, 4, 9));
         armies.add(new Army(ArmyType.GRIFFINS, "Griffins", 8, 6, 18));
         armies.add(new Army(ArmyType.DRAGONS, "Dragons", 4, 8, 18));
-        assertEquals(armies.afcm(city), 2);
+        final int afcm = armies.afcm(city);
+        assertEquals(afcm, 2);
+        final int[] as = armies.stream().mapToInt(army -> army.getTotalStrength(city, afcm)).toArray();
+        assertEquals(as, new int[] {6, 6, 8, 9});
     }
 
     @Test
-    public void dfcmFromManual() {
+    public void defenceFromManual() {
         final ArmyList armies = new ArmyList(3, new Empire(EmpireType.ORCS_OF_KOR));
         armies.add(new Army(ArmyType.LT_INF, "Light Infantry", 2, 3, 10));
         armies.add(new Army(ArmyType.WOLVES, "Wolf Riders", 4, 6, 15));
@@ -295,6 +298,9 @@ public class ArmyListTest {
         hero.increaseStrength();
         hero.takeArtifact(new Artifact("Spear of Ank", 1, 0));
         armies.add(hero);
-        assertEquals(armies.afcm(city), 2);
+        final int dfcm = armies.dfcm(city);
+        assertEquals(dfcm, 2);
+        final int[] ds = armies.stream().mapToInt(army -> army.getTotalStrength(city, dfcm)).toArray();
+        assertEquals(ds, new int[] {5, 8, 9});
     }
 }

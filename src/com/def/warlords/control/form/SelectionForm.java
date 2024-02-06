@@ -46,6 +46,7 @@ public class SelectionForm extends Form {
             }
             String bonus = "  -";
             if (army.isHero()) {
+                // BUG: W displays incorrect hero bonus value.
                 bonus = "+";
                 add(new Label(242, y, 16, font, Label.Alignment.RIGHT, Palette.WHITE, army.getCombatModifier() + ""));
             } else if (army.isSpecial() && army.isFlying()) {

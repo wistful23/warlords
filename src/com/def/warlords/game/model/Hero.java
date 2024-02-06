@@ -114,10 +114,10 @@ public class Hero extends Army {
     public int getCombatModifier() {
         int modifier = super.getCombatModifier();
         // (a). Hero Present.
-        final int totalStrength = getTotalStrength();
-        if (totalStrength >= 4) ++modifier;
-        if (totalStrength >= 7) ++modifier;
-        if (totalStrength >= 9) ++modifier;
+        final int strength = getStrength();
+        if (strength >= 4) ++modifier;
+        if (strength >= 7) ++modifier;
+        if (strength >= 9) ++modifier;
         // (d). Command Item Present.
         modifier += getTotalCommand();
         return modifier;

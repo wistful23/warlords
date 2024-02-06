@@ -560,6 +560,10 @@ public class Game implements Record {
             // Fight.
             Logger.info("AS=" + attackingArmyStrength + " AH=" + attackingArmyHealth +
                     " vs DS=" + defendingArmyStrength + " DH=" + defendingArmyHealth);
+            Util.assertTrue(attackingArmyStrength <= Army.MAX_STRENGTH && defendingArmyStrength <= Army.MAX_STRENGTH);
+            if (attackingArmyStrength <= 0 && defendingArmyStrength <= 0) {
+                throw new IllegalStateException("Can't calculate combat for armies with non-positive strength");
+            }
             while (attackingArmyHealth > 0 && defendingArmyHealth > 0) {
                 final int maxRollValue = intenseCombat ? MAX_VALUE_D12 : MAX_VALUE_D10;
                 final int attackingRollValue = Util.randomInt(maxRollValue) + 1;
