@@ -132,14 +132,11 @@ public final class Computer {
                     return target;
                 }
             }
-            // Move lone heroes iif DAC[0].
-            if (defendingArmyCount == 0 || !attackingArmies.isHeroList()) {
-                // Try to move the attacking armies.
-                final Tile target = findTarget(attackingArmies, source, searchBuildings, alwaysMoveHero);
-                if (target != null) {
-                    selectSubsetArmies(armies, attackingArmies);
-                    return target;
-                }
+            // Try to move the attacking armies.
+            final Tile target = findTarget(attackingArmies, source, searchBuildings, alwaysMoveHero);
+            if (target != null) {
+                selectSubsetArmies(armies, attackingArmies);
+                return target;
             }
         }
         if (armies.getCount() >= ArmyGroup.MAX_ARMY_COUNT / 2 && armies.getCount() % 2 == 0) {
@@ -208,16 +205,19 @@ public final class Computer {
         return defendingArmyCount;
     }
 
-    private Tile findTarget(ArmyList armies, Tile source, boolean searchBuildings, boolean ignoreAttackingArmyCount) {
+    private Tile findTarget(ArmyList armies, Tile source, boolean searchBuildings, boolean allowFallback) {
         return findTarget(armies, source, Integer.MAX_VALUE, ArmyGroup.MAX_ARMY_COUNT / 2,
-                searchBuildings, ignoreAttackingArmyCount);
+                searchBuildings, allowFallback);
     }
 
     private Tile findTarget(ArmyList armies, Tile source,
                             int commonDistLimit, int defenceDistLimit,
-                            boolean searchBuildings, boolean ignoreAttackingArmyCount) {
-        searchBuildings = searchBuildings && armies.getHero() != null;
-        Tile target = null;
+                            boolean searchBuildings, boolean allowFallback) {
+        final boolean hasHero = armies.getHero() != null;
+        final boolean hideHero = allowFallback && hasHero && armies.getCount() < ArmyGroup.MAX_ARMY_COUNT / 2;
+        searchBuildings = searchBuildings && hasHero;
+        Tile bestTarget = null;
+        Tile fallbackTarget = null;
         int currentCityWeight = Integer.MAX_VALUE;
         final Map<City, Integer> dac = new HashMap<>();
         final Map<Tile, Integer> distances = new HashMap<>();
@@ -228,7 +228,7 @@ public final class Computer {
             final Tile from = queue.poll();
             final int dist = distances.get(from) + 1;
             if (dist > commonDistLimit || currentCityWeight <= getMinCityWeight(dist)) {
-                return target;
+                return bestTarget != null ? bestTarget : allowFallback ? fallbackTarget : null;
             }
             for (final Tile to : game.getKingdom().getNeighborTiles(from, false)) {
                 if (distances.containsKey(to) || armies.getMovementCost(to) == ArmyType.FORBIDDEN_MOVEMENT_COST) {
@@ -258,19 +258,25 @@ public final class Computer {
                             city.getArmyCount() < dac.computeIfAbsent(city, this::getDefendingArmyCount)) {
                         return to;
                     }
+                    // Try to hide the hero in the city.
+                    if (hideHero && bestTarget == null && dist <= ArmyGroup.MAX_ARMY_COUNT * 2 &&
+                            to.canLocate(armies) && dac.computeIfAbsent(city, this::getDefendingArmyCount) > 1) {
+                        bestTarget = to;
+                    }
                 } else {
                     // Try to attack the city.
                     final int cityWeight = getCityWeight(city, dist);
                     if (cityWeight < currentCityWeight) {
-                        if (ignoreAttackingArmyCount || armies.getCount() >= getAttackingArmyCount(city, dist)) {
-                            target = to;
+                        if (armies.getCount() >= getAttackingArmyCount(city, dist)) {
+                            bestTarget = to;
                         }
+                        fallbackTarget = to;
                         currentCityWeight = cityWeight;
                     }
                 }
             }
         }
-        return target;
+        return bestTarget != null ? bestTarget : allowFallback ? fallbackTarget : null;
     }
 
     // Select the best armies to produce in `cities`.
