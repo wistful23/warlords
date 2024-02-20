@@ -213,9 +213,11 @@ public final class Computer {
     private Tile findTarget(ArmyList armies, Tile source,
                             int commonDistLimit, int defenceDistLimit,
                             boolean searchBuildings, boolean allowFallback) {
-        final boolean hasHero = armies.getHero() != null;
-        final boolean hideHero = allowFallback && hasHero && armies.getCount() < ArmyGroup.MAX_ARMY_COUNT / 2;
-        searchBuildings = searchBuildings && hasHero;
+        final Hero hero = armies.getHero();
+        final boolean canHideHero = allowFallback && hero != null && armies.getCount() < ArmyGroup.MAX_ARMY_COUNT / 2;
+        final boolean canSearchBuildings = searchBuildings && hero != null;
+        final boolean canSearchAllBuildings = canSearchBuildings &&
+                hero.getCombatModifier() < 2 && armies.stream().allMatch(army -> army == hero || army.isFlying());
         Tile bestTarget = null;
         Tile fallbackTarget = null;
         int currentCityWeight = Integer.MAX_VALUE;
@@ -236,7 +238,7 @@ public final class Computer {
                 }
                 distances.put(to, dist);
                 queue.add(to);
-                if (searchBuildings) {
+                if (canSearchAllBuildings || (dist <= ArmyGroup.MAX_ARMY_COUNT && canSearchBuildings)) {
                     // Try to find buildings.
                     final Building building = to.getBuilding();
                     if (building != null && !building.isExplored() && (building.isCrypt() || building.isSage())) {
@@ -259,7 +261,7 @@ public final class Computer {
                         return to;
                     }
                     // Try to hide the hero in the city.
-                    if (hideHero && bestTarget == null && dist <= ArmyGroup.MAX_ARMY_COUNT * 2 &&
+                    if (canHideHero && bestTarget == null && dist <= ArmyGroup.MAX_ARMY_COUNT * 2 &&
                             to.canLocate(armies) && dac.computeIfAbsent(city, this::getDefendingArmyCount) > 1) {
                         bestTarget = to;
                     }
