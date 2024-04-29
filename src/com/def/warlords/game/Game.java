@@ -501,8 +501,9 @@ public class Game implements Record {
                         continue;
                     }
                     final City city = to.getCity();
-                    if (city != null && city != target.getCity()) {
-                        // Avoid non-target enemy cities.
+                    if ((city != null && city != target.getCity()) ||
+                            (city == null && to.getArmyCount() >= armies.getCount())) {
+                        // Avoid non-target enemy cities and large enemy groups.
                         movementCost = UNWANTED_MOVEMENT_COST;
                     }
                 } else if (!to.canLocate(armies)) {
