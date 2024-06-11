@@ -201,7 +201,8 @@ public class ComputerController implements PlayerController {
         if (moveActiveGroup(false) || moveActiveGroup(true)) {
             return;
         }
-        computer.selectProduction(player.getCities());
+        final boolean improveDefences = player.getLevel().compareTo(PlayerLevel.LORD) >= 0;
+        computer.processCities(player.getCities(), improveDefences);
         endTurn();
     }
 

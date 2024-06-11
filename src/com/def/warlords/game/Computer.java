@@ -281,8 +281,8 @@ public final class Computer {
         return bestTarget != null ? bestTarget : allowFallback ? fallbackTarget : null;
     }
 
-    // Select the best armies to produce in `cities`.
-    public void selectProduction(List<City> cities) {
+    // Selects the best armies to produce and improves defences.
+    public void processCities(List<City> cities, boolean improveDefences) {
         final Map<City, Integer> dac = new HashMap<>();
         cities.forEach(city -> dac.put(city, getDefendingArmyCount(city)));
         cities.sort(Comparator.comparing(dac::get));
@@ -345,6 +345,25 @@ public final class Computer {
             }
             city.getFactories().stream().filter(ArmyFactory::isFlying).min(COMPARATOR_FACTORY_ATTACK)
                     .ifPresent(city::startProducing);
+        }
+        if (!improveDefences) {
+            return;
+        }
+        // Improve the city defences with DAC[8..2].
+        for (int combatModifier = 1; combatModifier <= City.MAX_COMBAT_MODIFIER; ++combatModifier) {
+            for (final City city : Util.reverse(cities)) {
+                if (dac.get(city) < combatModifier * 2) {
+                    break;
+                }
+                if (city.getArmyCount() == 0) {
+                    continue;
+                }
+                final int defencePrice = city.getDefencePrice(combatModifier);
+                if (defencePrice > 0 && defencePrice * 2 <= city.getEmpire().getGold()) {
+                    Util.assertTrue(city.getEmpire().pay(defencePrice));
+                    city.increaseDefence(combatModifier);
+                }
+            }
         }
     }
 }

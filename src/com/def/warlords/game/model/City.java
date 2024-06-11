@@ -20,9 +20,11 @@ public class City implements Record, Locatable, Comparable<City> {
     public static final int MAX_FACTORY_COUNT = 4;
     public static final int MAX_SOURCE_CITY_COUNT = 4;
 
+    public static final int MAX_COMBAT_MODIFIER = 3;
     public static final int MAX_DEFENCE = 10;
 
-    private static final int[] defencePrices = {50, 50, 50, 75, 100, 150, 175, 350, 500, 800, 0};
+    private static final int[] defenceLevels = {0, 2, 7, MAX_DEFENCE};
+    private static final int[] defencePrices = {0, 50, 100, 150, 225, 325, 475, 650, 1000, 1500, 2300};
 
     private String name;
     private Tile mainTile, portTile;
@@ -69,13 +71,21 @@ public class City implements Record, Locatable, Comparable<City> {
     }
 
     public int getDefencePrice() {
-        return defencePrices[defence];
+        return defence < MAX_DEFENCE ? defencePrices[defence + 1] - defencePrices[defence] : 0;
+    }
+
+    public int getDefencePrice(int combatModifier) {
+        return Math.max(defencePrices[defenceLevels[combatModifier]] - defencePrices[defence], 0);
     }
 
     public void increaseDefence() {
         if (defence < MAX_DEFENCE) {
             ++defence;
         }
+    }
+
+    public void increaseDefence(int combatModifier) {
+        defence = Math.max(defence, defenceLevels[combatModifier]);
     }
 
     public void decreaseDefence() {
@@ -86,9 +96,9 @@ public class City implements Record, Locatable, Comparable<City> {
 
     public int getCombatModifier() {
         int modifier = 0;
-        if (defence >= 2) ++modifier;
-        if (defence >= 7) ++modifier;
-        if (defence >= 9) ++modifier;
+        while (modifier < MAX_COMBAT_MODIFIER && defenceLevels[modifier + 1] <= defence) {
+            ++modifier;
+        }
         return modifier;
     }
 

@@ -120,10 +120,10 @@ public class DeveloperController {
                 Logger.info("No move is proposed");
             }
         }
-        // Select production by the computer.
-        if (keyCode == KeyEvent.VK_P) {
-            computer.selectProduction(game.getCurrentPlayer().getCities());
-            Logger.info("Selected production");
+        // Process the cities by the computer.
+        if (keyCode == KeyEvent.VK_C) {
+            computer.processCities(game.getCurrentPlayer().getCities(), true);
+            Logger.info("Processed cities");
         }
         return true;
     }
