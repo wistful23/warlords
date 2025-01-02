@@ -1,8 +1,8 @@
 package com.def.warlords.control.form;
 
 import com.def.warlords.graphics.Cursor;
+import com.def.warlords.util.Timer;
 
-import javax.swing.Timer;
 import java.awt.event.MouseEvent;
 
 /**
@@ -11,7 +11,7 @@ import java.awt.event.MouseEvent;
  */
 public class TimedMessageForm extends MessageForm {
 
-    private static final int DELAY = 3000;
+    private static final int DELAY_MESSAGE = 3000;
 
     private Timer timer;
 
@@ -22,9 +22,8 @@ public class TimedMessageForm extends MessageForm {
     @Override
     void init() {
         super.init();
-        timer = createTimer(DELAY, e -> deactivate());
-        timer.setRepeats(false);
-        timer.start();
+        timer = createTimer(this::deactivate);
+        timer.start(DELAY_MESSAGE);
     }
 
     @Override

@@ -5,7 +5,6 @@ import com.def.warlords.game.*;
 import com.def.warlords.game.model.*;
 import com.def.warlords.util.Util;
 
-import javax.swing.Timer;
 import java.awt.event.KeyEvent;
 import java.util.List;
 
@@ -53,9 +52,7 @@ public class ComputerController implements PlayerController {
         if (controller.isCurrentPlayerObserved()) {
             controller.showCapital();
         }
-        final Timer timer = controller.createTimer(DELAY_TURN, e -> moveNextGroup(true));
-        timer.setRepeats(false);
-        timer.start();
+        controller.createTimer(() -> moveNextGroup(true)).start(DELAY_TURN);
     }
 
     @Override

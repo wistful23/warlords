@@ -1,9 +1,10 @@
 package com.def.warlords.sound;
 
+import com.def.warlords.util.Timer;
+
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineEvent;
-import javax.swing.Timer;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,7 +15,7 @@ import java.io.InputStream;
  */
 public class Sound {
 
-    private static final int DELAY = 1000;
+    private static final int DELAY_SILENCE = 1000;
 
     private Runnable listener;
 
@@ -49,9 +50,8 @@ public class Sound {
         if (clip != null) {
             clip.start();
         } else if (timer == null) {
-            timer = new Timer(DELAY, e -> notifyListener());
-            timer.setRepeats(false);
-            timer.start();
+            timer = new Timer(this::notifyListener);
+            timer.start(DELAY_SILENCE);
         }
     }
 

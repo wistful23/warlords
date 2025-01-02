@@ -3,9 +3,7 @@ package com.def.warlords.control.form;
 import com.def.warlords.gui.Container;
 import com.def.warlords.sound.Sound;
 import com.def.warlords.sound.SoundInfo;
-
-import javax.swing.Timer;
-import java.awt.event.ActionListener;
+import com.def.warlords.util.Timer;
 
 import static com.def.warlords.control.common.Dimensions.*;
 
@@ -32,8 +30,8 @@ public class Form extends Container {
         controller.deactivateForm(this);
     }
 
-    Timer createTimer(int delay, ActionListener listener) {
-        return controller.createTimer(delay, listener);
+    Timer createTimer(Runnable listener) {
+        return controller.createTimer(listener);
     }
 
     Sound createSound(SoundInfo soundInfo, Runnable listener) {

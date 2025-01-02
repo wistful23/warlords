@@ -18,15 +18,18 @@ import com.def.warlords.sound.Sound;
 import com.def.warlords.sound.SoundFactory;
 import com.def.warlords.sound.SoundInfo;
 import com.def.warlords.util.Logger;
+import com.def.warlords.util.Timer;
 import com.def.warlords.util.Toggle;
 
 import javax.swing.JComponent;
-import javax.swing.Timer;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.SecondaryLoop;
-import java.awt.event.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.List;
 
@@ -118,10 +121,11 @@ public class MainController extends JComponent implements FormController, MenuCo
     }
 
     @Override
-    public Timer createTimer(int delay, ActionListener listener) {
-        final Timer timer = new Timer(delay, listener);
-        timer.addActionListener(e -> repaint());
-        return timer;
+    public Timer createTimer(Runnable listener) {
+        return new Timer(() -> {
+            repaint();
+            listener.run();
+        });
     }
 
     @Override

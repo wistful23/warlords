@@ -6,9 +6,9 @@ import com.def.warlords.game.model.*;
 import com.def.warlords.graphics.*;
 import com.def.warlords.gui.Component;
 import com.def.warlords.util.DeveloperMode;
+import com.def.warlords.util.Timer;
 import com.def.warlords.util.Util;
 
-import javax.swing.Timer;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -39,7 +39,8 @@ public class PlayingMap extends Component {
 
     private static final int ARMY_FRAME_COUNT = 4;
 
-    private static final int DELAY_ANIMATION = 200;
+    private static final int DELAY_FRAME_ANIMATION = 200;
+    private static final int DELAY_ARMY_MOVE = 150;
 
     private static final int[] num_dx = {-1, 0, 1, -1, 0, 1, -1, 0, 1};
     private static final int[] num_dy = {1, 1, 1, 0, 0, 0, -1, -1, -1};
@@ -61,6 +62,8 @@ public class PlayingMap extends Component {
     private SearchMode searchMode = SearchMode.NONE;
     private Tile combatTile;
 
+    private Timer armyMoveTimer;
+    private Timer armyFrameTimer;
     private int armyFrameIndex;
 
     public PlayingMap(MainController controller) {
@@ -175,26 +178,27 @@ public class PlayingMap extends Component {
         if (path == null) {
             return false;
         }
+        Util.assertNull(armyMoveTimer);
         if (controller.isCurrentPlayerObserved()) {
             final boolean disabled = controller.disableActiveContainer();
-            controller.createTimer(DELAY_ANIMATION, e -> {
+            armyMoveTimer = controller.createTimer(() -> {
                 final boolean finished = path.isEmpty();
                 if (finished || !move(path.remove())) {
-                    ((Timer) e.getSource()).stop();
+                    armyMoveTimer = null;
                     if (disabled) {
                         controller.enableActiveContainer();
                     }
                     if (callback != null) {
                         callback.accept(finished);
                     }
+                    return;
                 }
-            }).start();
+                armyMoveTimer.start(DELAY_ARMY_MOVE);
+            });
+            armyMoveTimer.start(DELAY_ARMY_MOVE);
         } else {
-            final Consumer<Boolean> callbackLater = finished -> {
-                final Timer timer = controller.createTimer(0, e -> callback.accept(finished));
-                timer.setRepeats(false);
-                timer.start();
-            };
+            final Consumer<Boolean> callbackLater =
+                    finished -> controller.createTimer(() -> callback.accept(finished)).start(0);
             boolean finished = true;
             for (final Tile to : path) {
                 if (!controller.getGame().move(selection, to)) {
@@ -474,18 +478,20 @@ public class PlayingMap extends Component {
     }
 
     private void startArmyFrameAnimation() {
-        if (!selection.isEmpty()) {
+        armyFrameIndex = 0;
+        if (armyFrameTimer != null) {
             return;
         }
-        controller.createTimer(DELAY_ANIMATION, e -> {
+        armyFrameTimer = controller.createTimer(() -> {
             if (selection.isEmpty()) {
-                ((Timer) e.getSource()).stop();
-                armyFrameIndex = 0;
+                armyFrameTimer.stop();
+                armyFrameTimer = null;
                 return;
             }
             if (++armyFrameIndex >= ARMY_FRAME_COUNT) {
                 armyFrameIndex = 0;
             }
-        }).start();
+        });
+        armyFrameTimer.start(DELAY_FRAME_ANIMATION, true);
     }
 }

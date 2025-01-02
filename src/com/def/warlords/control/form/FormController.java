@@ -2,9 +2,7 @@ package com.def.warlords.control.form;
 
 import com.def.warlords.sound.Sound;
 import com.def.warlords.sound.SoundInfo;
-
-import javax.swing.Timer;
-import java.awt.event.ActionListener;
+import com.def.warlords.util.Timer;
 
 /**
  * @author wistful23
@@ -15,6 +13,6 @@ public interface FormController {
     void activateForm(Form form);
     void deactivateForm(Form form);
 
-    Timer createTimer(int delay, ActionListener listener);
+    Timer createTimer(Runnable listener);
     Sound createSound(SoundInfo soundInfo, Runnable listener);
 }

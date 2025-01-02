@@ -3,14 +3,13 @@ package com.def.warlords.gui;
 import com.def.warlords.graphics.Font;
 import com.def.warlords.graphics.FontFactory;
 import com.def.warlords.graphics.Palette;
+import com.def.warlords.util.Timer;
 import com.def.warlords.util.Util;
 
-import javax.swing.Timer;
 import java.awt.Color;
 import java.awt.Graphics;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * @author wistful23
@@ -39,15 +38,15 @@ public class InputBox extends Component {
     private Color cursorColor = Palette.WHITE;
 
     public InputBox(int x, int y, int width, int charCount, String text,
-                    BiFunction<Integer, ActionListener, Timer> timerCreator, Button editButton, Listener listener) {
+                    Function<Runnable, Timer> timerCreator, Button editButton, Listener listener) {
         super(x, y, width, font.getHeight() + 6);
         this.charCount = charCount;
         this.text = text;
         this.editButton = editButton;
         this.listener = listener;
         this.input = new StringBuilder(charCount);
-        this.cursorTimer = timerCreator.apply(DELAY_CURSOR_ANIMATION,
-                e -> cursorColor = cursorColor == Palette.WHITE ? Palette.BLACK : Palette.WHITE);
+        this.cursorTimer = timerCreator.apply(() -> cursorColor = cursorColor == Palette.WHITE ? Palette.BLACK
+                                                                                               : Palette.WHITE);
         editButton.setListener(source -> startEditing());
     }
 
@@ -77,7 +76,7 @@ public class InputBox extends Component {
         }
         currentIndex = 0;
         editing = true;
-        cursorTimer.start();
+        cursorTimer.start(DELAY_CURSOR_ANIMATION, true);
     }
 
     public void commitEditing() {
@@ -170,7 +169,7 @@ public class InputBox extends Component {
     }
 
     private void resetCursor() {
-        cursorTimer.restart();
+        cursorTimer.start(DELAY_CURSOR_ANIMATION, true);
         cursorColor = Palette.WHITE;
     }
 }

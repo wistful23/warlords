@@ -9,9 +9,9 @@ import com.def.warlords.gui.GrayPanel;
 import com.def.warlords.gui.Image;
 import com.def.warlords.gui.Label;
 import com.def.warlords.gui.Rectangle;
+import com.def.warlords.util.Timer;
 import com.def.warlords.util.Util;
 
-import javax.swing.Timer;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.ArrayDeque;
@@ -129,13 +129,11 @@ public class CombatForm extends Form {
             attackingArmyImages.add(add(new Image(x, 222, Sprites.getArmySprite(attackingArmies.get(index)))));
         }
         // Timers.
-        nextRoundTimer = createTimer(DELAY_NEXT_ROUND, e -> nextRound());
-        nextRoundTimer.setRepeats(false);
-        removeArmyTimer = createTimer(DELAY_REMOVE_ARMY, e -> removeArmy());
-        removeArmyTimer.setRepeats(false);
+        nextRoundTimer = createTimer(this::nextRound);
+        removeArmyTimer = createTimer(this::removeArmy);
         // Start.
         if (game.isComputerTurn()) {
-            nextRoundTimer.start();
+            nextRoundTimer.start(DELAY_NEXT_ROUND);
         } else {
             nextRound();
         }
@@ -164,7 +162,7 @@ public class CombatForm extends Form {
         removeArmy();
         if (roundCount < protocol.size()) {
             killArmy();
-            nextRoundTimer.start();
+            nextRoundTimer.start(DELAY_NEXT_ROUND);
         } else if (roundCount == protocol.size()) {
             final Hero hero = attackingArmies.getHero();
             if (game.isComputerTurn()) {
@@ -175,8 +173,7 @@ public class CombatForm extends Form {
                 } else {
                     messageLabel.setText(defendingEmpireName + ": you are victorious!");
                 }
-                nextRoundTimer.setInitialDelay(DELAY_COMPUTER_MESSAGE);
-                nextRoundTimer.start();
+                nextRoundTimer.start(DELAY_COMPUTER_MESSAGE);
             } else {
                 if (defendingArmyImages.isEmpty()) {
                     if (protocol.isEmpty()) {
@@ -213,7 +210,7 @@ public class CombatForm extends Form {
         Util.assertNull(bloodImage);
         killedArmyImage = protocol.get(roundCount) ? defendingArmyImages.remove() : attackingArmyImages.remove();
         bloodImage = add(new Image(killedArmyImage.getX(), killedArmyImage.getY(), Sprites.ARMY_BLOOD));
-        removeArmyTimer.start();
+        removeArmyTimer.start(DELAY_REMOVE_ARMY);
     }
 
     private void removeArmy() {
