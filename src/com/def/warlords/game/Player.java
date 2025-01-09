@@ -154,15 +154,21 @@ public class Player implements Record {
     }
 
     private void hireHero(TurnController controller, int turnCount) {
-        if (empire.getHeroCount() > 0 && turnCount < lastHeroTurnCount + HERO_OFFER_TURN_INTERVAL) {
+        final int heroCount = empire.getHeroCount();
+        if (heroCount >= Empire.MAX_HERO_COUNT ||
+                (heroCount > 0 && turnCount < lastHeroTurnCount + HERO_OFFER_TURN_INTERVAL)) {
             return;
         }
         final int gold = empire.getGold();
-        if (empire.getHeroCount() >= Empire.MAX_HERO_COUNT || gold <= MIN_HERO_PRICE) {
+        if (gold <= MIN_HERO_PRICE) {
             return;
         }
-        // As more gold as more chances for a hero offer.
-        if (Util.randomInt(Math.max(MIN_HERO_OFFER_CHANCE - gold / MIN_HERO_PRICE, MAX_HERO_OFFER_CHANCE)) > 0) {
+        // A first hero always has the maximum offer chance.
+        // For other heroes, as more gold as more chances for a hero offer.
+        final int heroChance = heroCount > 0
+                               ? Math.max(MIN_HERO_OFFER_CHANCE - gold / MIN_HERO_PRICE, MAX_HERO_OFFER_CHANCE)
+                               : MAX_HERO_OFFER_CHANCE;
+        if (Util.randomInt(heroChance) > 0) {
             return;
         }
         final City city = empire.getRandomCity();
@@ -179,7 +185,8 @@ public class Player implements Record {
         Util.assertTrue(empire.pay(cost));
         final Hero hero = city.hireHero(heroName, true);
         Util.assertNotNull(hero);
-        final int allyCount = empire.getHeroCount() > 1 ? Util.randomInt(MAX_CITY_ALLY_COUNT + 1) : 0;
+        // A first hero doesn't bring any allies.
+        final int allyCount = heroCount > 0 ? Util.randomInt(MAX_CITY_ALLY_COUNT + 1) : 0;
         if (allyCount > 0) {
             controller.onAlliesBrought(allyCount);
             hero.joinAllies(kingdom, kingdom.getRandomAllyFactory(), allyCount);
