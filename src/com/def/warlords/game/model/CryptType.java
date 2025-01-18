@@ -9,6 +9,7 @@ public enum CryptType {
     // @formatter:off
     ALLIES      ( 8),
     ARTIFACT    (14),
+    // NOTE: W randomly distributes altars, thrones, and gold among 10 crypts.
     ALTAR       ( 4),
     THRONE      ( 3),
     GOLD        ( 3);
