@@ -329,7 +329,7 @@ public class Game implements Record {
             return true;
         }
         // NOTE: W increases the chance of survival if the hero has armies.
-        final boolean slain = Util.randomInt(hero.getTotalStrength() + 1) == 0;
+        final boolean slain = Util.randomInt(hero.getTotalStrength() + guard.getWeakness()) == 0;
         controller.onGuardFight(hero, guard, slain);
         final Tile tile = hero.getGroup().getTile();
         if (slain) {

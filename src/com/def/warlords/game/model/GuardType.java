@@ -8,16 +8,16 @@ public enum GuardType {
 
     // @formatter:off
     // The order must match the ally factories.
-    DRAGON  ("Dragon"),
-    DEMON   ("Demon"),
-    DEVIL   ("Devil"),
-    WIZARD  ("Wizard"),
-    GHOST   ("Ghost"),
+    DRAGON  ("Dragon",  0),
+    DEMON   ("Demon",   1),
+    DEVIL   ("Devil",   1),
+    WIZARD  ("Wizard",  2),
+    GHOST   ("Ghost",   2),
     // The rest of the guards can't be allies.
-    TROLL   ("Troll"),
-    GIANT   ("Giant"),
-    WOLF    ("Wolf"),
-    GOBLIN  ("Goblin");
+    TROLL   ("Troll",   3),
+    GIANT   ("Giant",   3),
+    WOLF    ("Wolf",    4),
+    GOBLIN  ("Goblin",  4);
     // @formatter:on
 
     public static final int COUNT = values().length;
@@ -25,12 +25,18 @@ public enum GuardType {
     public static final int ALLY_COUNT = 5;
 
     private final String name;
+    private final int weakness;
 
-    GuardType(String name) {
+    GuardType(String name, int weakness) {
         this.name = name;
+        this.weakness = weakness;
     }
 
     public String getName() {
         return name;
+    }
+
+    public int getWeakness() {
+        return weakness;
     }
 }
