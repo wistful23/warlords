@@ -27,6 +27,7 @@ public class Game implements Record {
 
     private static final int MAX_CRYPT_ALLY_COUNT = 2;
 
+    // NOTE: W generates gold for crypts and sages in the range [800..3300]. We have reduced this range.
     private static final int MIN_CRYPT_GOLD = 300;
     private static final int MAX_CRYPT_GOLD = 1200;
 
