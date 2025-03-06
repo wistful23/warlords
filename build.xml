@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="warlords" basedir="." default="dist">
 
-    <property name="src.dir" location="src"/>
+    <property name="warlords.src.dir" location="warlords/src"/>
+    <property name="desktop.src.dir" location="desktop/src"/>
     <property name="data.dir" location="data"/>
     <property name="build.dir" location="build"/>
     <property name="dist.dir" location="dist"/>
@@ -13,7 +14,10 @@
 
     <target name="build" description="Compile the sources">
         <mkdir dir="${build.dir}"/>
-        <javac srcdir="${src.dir}" destdir="${build.dir}" includeantruntime="false" source="8" target="8"/>
+        <javac destdir="${build.dir}" includeantruntime="false" source="8" target="8">
+            <src path="${warlords.src.dir}"/>
+            <src path="${desktop.src.dir}"/>
+        </javac>
         <copy todir="${build.dir}">
             <fileset dir="${data.dir}"/>
         </copy>
@@ -22,7 +26,7 @@
     <target name="dist" depends="build" description="Generate the distribution">
         <jar jarfile="${dist.dir}/${ant.project.name}.jar" basedir="${build.dir}">
             <manifest>
-                <attribute name="Main-Class" value="com.def.warlords.Main"/>
+                <attribute name="Main-Class" value="com.def.warlords.desktop.Main"/>
             </manifest>
         </jar>
     </target>
