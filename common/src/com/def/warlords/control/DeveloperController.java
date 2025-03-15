@@ -14,6 +14,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
+import static com.def.warlords.control.common.Dimensions.*;
+
 /**
  * @author wistful23
  * @version 1.23
@@ -47,8 +49,7 @@ public class DeveloperController {
         }
         // Take a screenshot.
         if (keyCode == KeyEvent.VK_S) {
-            final BufferedImage image = new BufferedImage(controller.getWidth(), controller.getHeight(),
-                    BufferedImage.TYPE_INT_ARGB);
+            final BufferedImage image = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_ARGB);
             controller.paint(image.getGraphics());
             try {
                 ImageIO.write(image, "png", new File("./shots/shot.png"));

@@ -21,16 +21,11 @@ import com.def.warlords.util.Logger;
 import com.def.warlords.util.Timer;
 import com.def.warlords.util.Toggle;
 
-import javax.swing.JComponent;
-import java.awt.Component;
 import java.awt.Graphics;
-import java.awt.Point;
 import java.awt.SecondaryLoop;
-import java.awt.event.KeyAdapter;
+import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.util.List;
 
 import static com.def.warlords.control.common.Dimensions.*;
@@ -39,11 +34,11 @@ import static com.def.warlords.control.common.Dimensions.*;
  * @author wistful23
  * @version 1.23
  */
-public class MainController extends JComponent implements FormController, MenuController, GameController {
+public class MainController implements FormController, MenuController, GameController {
+
+    private final Platform platform;
 
     private final DeveloperController developerController = new DeveloperController(this);
-
-    private final Mouse mouse = new Mouse();
 
     private Bitmap mainBitmap = BitmapFactory.getInstance().fetchBitmap(BitmapInfo.MAIN);
 
@@ -77,7 +72,8 @@ public class MainController extends JComponent implements FormController, MenuCo
 
     private int currentRecordIndex = -1;
 
-    public MainController() {
+    public MainController(Platform platform) {
+        this.platform = platform;
         mainContainer.add(playingMap);
         mainContainer.add(strategicMap);
         mainContainer.add(infoScreen);
@@ -85,9 +81,6 @@ public class MainController extends JComponent implements FormController, MenuCo
         mainContainer.add(commandBar);
         mainContainer.add(menuStrip);
         productionScreen.setVisible(false);
-        setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-        setFocusable(true);
-        addKeyListener(new Keyboard());
     }
 
     public void start() {
@@ -103,7 +96,7 @@ public class MainController extends JComponent implements FormController, MenuCo
             throw new IllegalStateException("Form " + activeForm + " is already active");
         }
         activeForm = form;
-        secondaryLoop = getToolkit().getSystemEventQueue().createSecondaryLoop();
+        secondaryLoop = Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop();
         if (!secondaryLoop.enter()) {
             throw new IllegalStateException("Secondary loop error");
         }
@@ -123,7 +116,7 @@ public class MainController extends JComponent implements FormController, MenuCo
     @Override
     public Timer createTimer(Runnable listener) {
         return new Timer(() -> {
-            repaint();
+            platform.repaint();
             listener.run();
         });
     }
@@ -131,7 +124,7 @@ public class MainController extends JComponent implements FormController, MenuCo
     @Override
     public Sound createSound(SoundInfo soundInfo, Runnable listener) {
         return SoundFactory.getInstance().createSound(soundInfo, () -> {
-            repaint();
+            platform.repaint();
             listener.run();
         });
     }
@@ -532,20 +525,6 @@ public class MainController extends JComponent implements FormController, MenuCo
         return false;
     }
 
-    // Main paint.
-    @Override
-    public void paint(Graphics g) {
-        // Background.
-        mainBitmap.drawSprite(g, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0);
-        if (activeContainer != null) {
-            activeContainer.paint(g);
-        }
-        if (activeForm != null) {
-            activeForm.paint(g);
-        }
-        mouse.paint(g);
-    }
-
     private void showStatReport(StatReportType type) {
         if (!infoScreen.isVisible()) {
             throw new IllegalStateException("Info Screen has to be visible");
@@ -565,116 +544,65 @@ public class MainController extends JComponent implements FormController, MenuCo
         return artifact;
     }
 
-    private final class Keyboard extends KeyAdapter {
-
-        @Override
-        public void keyPressed(KeyEvent e) {
-            repaint();
-            mouse.updateKeyModifiers(e.getModifiersEx());
-            if (developerController.processKeyEvent(e)) {
-                return;
-            }
-            if (computerController.processKeyEvent(e)) {
-                return;
-            }
-            if (mouse.isReleased()) {
-                if (activeForm != null) {
-                    activeForm.keyPressed(e);
-                } else if (activeContainer != null) {
-                    activeContainer.keyPressed(e);
-                }
-            }
+    // Main paint.
+    public void paint(Graphics g) {
+        // Background.
+        mainBitmap.drawSprite(g, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0);
+        if (activeContainer != null) {
+            activeContainer.paint(g);
         }
-
-        @Override
-        public void keyReleased(KeyEvent e) {
-            repaint();
-            mouse.updateKeyModifiers(e.getModifiersEx());
+        if (activeForm != null) {
+            activeForm.paint(g);
         }
     }
 
-    private final class Mouse extends MouseAdapter {
-
-        private static final int BUTTON_DOWN_MASK =
-                MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.BUTTON2_DOWN_MASK | MouseEvent.BUTTON3_DOWN_MASK;
-
-        private MouseEvent e;
-
-        private Mouse() {
-            final BufferedImage emptyImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-            setCursor(getToolkit().createCustomCursor(emptyImage, new Point(), ""));
-            addMouseListener(this);
-            addMouseMotionListener(this);
+    public void drawCursor(Graphics g, MouseEvent e) {
+        Cursor cursor = Cursor.EMPTY;
+        if (activeForm != null) {
+            cursor = activeForm.getCursor(e);
+        } else if (activeContainer != null && activeContainer.isEnabled()) {
+            cursor = activeContainer.getCursor(e);
         }
+        cursor.draw(g, e.getPoint());
+    }
 
-        public boolean isReleased() {
-            return e == null || (e.getModifiersEx() & BUTTON_DOWN_MASK) == 0;
+    public void mousePressed(MouseEvent e) {
+        if (activeForm != null) {
+            activeForm.mousePressed(e);
+        } else if (activeContainer != null) {
+            activeContainer.mousePressed(e);
         }
+    }
 
-        public void paint(Graphics g) {
-            if (e == null) {
-                return;
-            }
-            Cursor cursor = Cursor.EMPTY;
+    public void mouseReleased(MouseEvent e) {
+        if (activeForm != null) {
+            activeForm.mouseReleased(e);
+        } else if (activeContainer != null) {
+            activeContainer.mouseReleased(e);
+        }
+    }
+
+    public void mouseDragged(MouseEvent e) {
+        if (activeForm != null) {
+            activeForm.mouseDragged(e);
+        } else if (activeContainer != null) {
+            activeContainer.mouseDragged(e);
+        }
+    }
+
+    public void keyPressed(KeyEvent e, boolean mouseReleased) {
+        if (developerController.processKeyEvent(e)) {
+            return;
+        }
+        if (computerController.processKeyEvent(e)) {
+            return;
+        }
+        if (mouseReleased) {
             if (activeForm != null) {
-                cursor = activeForm.getCursor(e);
-            } else if (activeContainer != null && activeContainer.isEnabled()) {
-                cursor = activeContainer.getCursor(e);
-            }
-            cursor.draw(g, e.getPoint());
-        }
-
-        public void updateKeyModifiers(int modifiers) {
-            if (e != null) {
-                e = new MouseEvent((Component) e.getSource(), e.getID(), e.getWhen(),
-                        e.getModifiersEx() & BUTTON_DOWN_MASK | modifiers,
-                        e.getX(), e.getY(), e.getClickCount(), e.isPopupTrigger());
-            }
-        }
-
-        @Override
-        public void mousePressed(MouseEvent e) {
-            repaint();
-            this.e = e;
-            if (activeForm != null) {
-                activeForm.mousePressed(e);
+                activeForm.keyPressed(e);
             } else if (activeContainer != null) {
-                activeContainer.mousePressed(e);
+                activeContainer.keyPressed(e);
             }
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent e) {
-            repaint();
-            this.e = e;
-            if (activeForm != null) {
-                activeForm.mouseReleased(e);
-            } else if (activeContainer != null) {
-                activeContainer.mouseReleased(e);
-            }
-        }
-
-        @Override
-        public void mouseExited(MouseEvent e) {
-            repaint();
-            this.e = null;
-        }
-
-        @Override
-        public void mouseDragged(MouseEvent e) {
-            repaint();
-            this.e = e;
-            if (activeForm != null) {
-                activeForm.mouseDragged(e);
-            } else if (activeContainer != null) {
-                activeContainer.mouseDragged(e);
-            }
-        }
-
-        @Override
-        public void mouseMoved(MouseEvent e) {
-            repaint();
-            this.e = e;
         }
     }
 }

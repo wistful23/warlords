@@ -1,7 +1,5 @@
 package com.def.warlords.desktop;
 
-import com.def.warlords.control.MainController;
-
 import javax.swing.JFrame;
 import java.awt.EventQueue;
 
@@ -16,10 +14,10 @@ public class Main extends JFrame {
     }
 
     public void start() {
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(false);
         setTitle("Warlords 2.10");
-        final MainController mainComponent = new MainController();
+        final MainComponent mainComponent = new MainComponent();
         setContentPane(mainComponent);
         getContentPane().setPreferredSize(mainComponent.getSize());
         pack();
