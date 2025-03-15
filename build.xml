@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="warlords" basedir="." default="dist">
 
-    <property name="warlords.src.dir" location="warlords/src"/>
+    <property name="common.src.dir" location="common/src"/>
     <property name="desktop.src.dir" location="desktop/src"/>
     <property name="data.dir" location="data"/>
     <property name="build.dir" location="build"/>
@@ -15,7 +15,7 @@
     <target name="build" description="Compile the sources">
         <mkdir dir="${build.dir}"/>
         <javac destdir="${build.dir}" includeantruntime="false" source="8" target="8">
-            <src path="${warlords.src.dir}"/>
+            <src path="${common.src.dir}"/>
             <src path="${desktop.src.dir}"/>
         </javac>
         <copy todir="${build.dir}">
