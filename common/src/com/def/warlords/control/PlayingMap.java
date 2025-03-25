@@ -483,6 +483,9 @@ public class PlayingMap extends Component {
             return;
         }
         armyFrameTimer = controller.createTimer(() -> {
+            if (armyFrameTimer == null) {
+                return;
+            }
             if (selection.isEmpty()) {
                 armyFrameTimer.stop();
                 armyFrameTimer = null;
