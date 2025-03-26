@@ -2,6 +2,8 @@ package com.def.warlords.desktop;
 
 import com.def.warlords.control.MainController;
 import com.def.warlords.control.Platform;
+import com.def.warlords.graphics.BitmapFactory;
+import com.def.warlords.sound.SoundFactory;
 
 import javax.swing.JComponent;
 import java.awt.Component;
@@ -12,6 +14,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.InputStream;
 
 import static com.def.warlords.control.common.Dimensions.*;
 
@@ -21,11 +24,14 @@ import static com.def.warlords.control.common.Dimensions.*;
  */
 public class MainComponent extends JComponent implements Platform {
 
-    private final MainController controller = new MainController(this);
+    private final MainController controller;
 
     private final Mouse mouse = new Mouse();
 
     public MainComponent() {
+        BitmapFactory.createInstance(this);
+        SoundFactory.createInstance(this);
+        this.controller = new MainController(this);
         setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
         setFocusable(true);
         addKeyListener(new Keyboard());
@@ -33,6 +39,11 @@ public class MainComponent extends JComponent implements Platform {
 
     public void start() {
         controller.start();
+    }
+
+    @Override
+    public InputStream getResourceAsStream(String name) {
+        return getClass().getResourceAsStream("/" + name);
     }
 
     @Override

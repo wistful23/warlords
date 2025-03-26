@@ -215,7 +215,7 @@ public class MainController implements FormController, MenuController, GameContr
     public void startGame(List<PlayerParams> playerParams) {
         new SoundForm(this, SoundInfo.DRUMROLL).activate();
         final Kingdom kingdom = new Kingdom();
-        if (!kingdom.init()) {
+        if (!kingdom.init(platform)) {
             Logger.error("Failed to initialize Kingdom");
             return;
         }

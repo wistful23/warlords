@@ -1,5 +1,6 @@
 package com.def.warlords.game.model;
 
+import com.def.warlords.control.Platform;
 import com.def.warlords.record.Record;
 import com.def.warlords.record.RecordInputStream;
 import com.def.warlords.record.RecordOutputStream;
@@ -88,10 +89,10 @@ public class Kingdom implements Record {
     private final List<ArmyFactory> allyFactories = new ArrayList<>();
     private final List<String> heroNames = new ArrayList<>();
 
-    public boolean init() {
+    public boolean init(Platform platform) {
         initEmpires();
-        return initMap() && initCities() && initBuildings() && initArtifacts() &&
-                initAllyFactories() && initHeroNames();
+        return initMap(platform) && initCities(platform) && initBuildings(platform) && initArtifacts(platform) &&
+                initAllyFactories(platform) && initHeroNames(platform);
     }
 
     public Empire getEmpire(EmpireType empireType) {
@@ -169,8 +170,8 @@ public class Kingdom implements Record {
         }
     }
 
-    private boolean initMap() {
-        try (final InputStream in = getClass().getResourceAsStream("/illuria.map")) {
+    private boolean initMap(Platform platform) {
+        try (final InputStream in = platform.getResourceAsStream("illuria.map")) {
             if (in == null) {
                 throw new FileNotFoundException("Map was not found");
             }
@@ -191,8 +192,8 @@ public class Kingdom implements Record {
         return true;
     }
 
-    private boolean initCities() {
-        try (final BufferedReader br = createBufferedReader("cities.txt")) {
+    private boolean initCities(Platform platform) {
+        try (final BufferedReader br = createBufferedReader(platform, "cities.txt")) {
             while (br.ready()) {
                 final String s = br.readLine();
                 final String name = s.substring(0, 15).trim();
@@ -233,7 +234,7 @@ public class Kingdom implements Record {
         return true;
     }
 
-    private boolean initBuildings() {
+    private boolean initBuildings(Platform platform) {
         final List<CryptType> cryptTypes = new ArrayList<>();
         for (final CryptType cryptType : CryptType.values()) {
             for (int i = 0; i < cryptType.getCount(); ++i) {
@@ -241,7 +242,7 @@ public class Kingdom implements Record {
             }
         }
         Collections.shuffle(cryptTypes);
-        try (final BufferedReader br = createBufferedReader("buildings.txt")) {
+        try (final BufferedReader br = createBufferedReader(platform, "buildings.txt")) {
             int index = 0;
             while (br.ready()) {
                 final String s = br.readLine();
@@ -274,7 +275,7 @@ public class Kingdom implements Record {
         return true;
     }
 
-    private boolean initArtifacts() {
+    private boolean initArtifacts(Platform platform) {
         final List<Crypt> crypts = new ArrayList<>();
         for (int index = CRYPT_INDEX_OFFSET; index < buildings.size(); ++index) {
             final Crypt crypt = (Crypt) buildings.get(index);
@@ -283,7 +284,7 @@ public class Kingdom implements Record {
             }
         }
         Collections.shuffle(crypts);
-        try (final BufferedReader br = createBufferedReader("artifacts.txt")) {
+        try (final BufferedReader br = createBufferedReader(platform, "artifacts.txt")) {
             int index = 0;
             while (br.ready()) {
                 final String s = br.readLine();
@@ -304,8 +305,8 @@ public class Kingdom implements Record {
         return true;
     }
 
-    private boolean initAllyFactories() {
-        try (final BufferedReader br = createBufferedReader("allies.txt")) {
+    private boolean initAllyFactories(Platform platform) {
+        try (final BufferedReader br = createBufferedReader(platform, "allies.txt")) {
             while (br.ready()) {
                 allyFactories.add(parseArmyFactory(br.readLine(), 0));
             }
@@ -317,8 +318,8 @@ public class Kingdom implements Record {
         return true;
     }
 
-    private boolean initHeroNames() {
-        try (final BufferedReader br = createBufferedReader("heroes.txt")) {
+    private boolean initHeroNames(Platform platform) {
+        try (final BufferedReader br = createBufferedReader(platform, "heroes.txt")) {
             while (br.ready()) {
                 heroNames.add(br.readLine());
             }
@@ -330,8 +331,8 @@ public class Kingdom implements Record {
         return true;
     }
 
-    private BufferedReader createBufferedReader(String resourceName) throws IOException {
-        final InputStream in = getClass().getResourceAsStream("/" + resourceName);
+    private BufferedReader createBufferedReader(Platform platform, String resourceName) throws IOException {
+        final InputStream in = platform.getResourceAsStream(resourceName);
         if (in == null) {
             throw new FileNotFoundException("Resource was not found: " + resourceName);
         }

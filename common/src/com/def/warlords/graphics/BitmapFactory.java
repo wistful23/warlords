@@ -1,5 +1,6 @@
 package com.def.warlords.graphics;
 
+import com.def.warlords.control.Platform;
 import com.def.warlords.util.Logger;
 
 import javax.imageio.ImageIO;
@@ -17,16 +18,29 @@ import java.util.Map;
  */
 public final class BitmapFactory {
 
-    private static final BitmapFactory instance = new BitmapFactory();
+    private static BitmapFactory instance;
+
+    public static void createInstance(Platform platform) {
+        if (instance != null) {
+            throw new IllegalStateException("Bitmap factory is already created");
+        }
+        instance = new BitmapFactory(platform);
+    }
 
     public static BitmapFactory getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("Bitmap factory is not created");
+        }
         return instance;
     }
+
+    private final Platform platform;
 
     private final Bitmap[] bitmaps = new Bitmap[BitmapInfo.COUNT];
     private final Map<Long, Bitmap> transformedBitmaps = new HashMap<>();
 
-    private BitmapFactory() {
+    private BitmapFactory(Platform platform) {
+        this.platform = platform;
         ImageIO.setUseCache(false);
     }
 
@@ -68,7 +82,7 @@ public final class BitmapFactory {
 
     private BufferedImage loadImage(String fileName, int transparentRGB) {
         BufferedImage image = null;
-        try (final InputStream in = getClass().getResourceAsStream("/img/" + fileName)) {
+        try (final InputStream in = platform.getResourceAsStream("img/" + fileName)) {
             if (in == null) {
                 throw new FileNotFoundException("Image was not found: " + fileName);
             }
