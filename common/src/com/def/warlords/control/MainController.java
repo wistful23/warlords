@@ -22,8 +22,6 @@ import com.def.warlords.util.Timer;
 import com.def.warlords.util.Toggle;
 
 import java.awt.Graphics;
-import java.awt.SecondaryLoop;
-import java.awt.Toolkit;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.util.List;
@@ -43,8 +41,6 @@ public class MainController implements FormController, MenuController, GameContr
     private Bitmap mainBitmap = BitmapFactory.getInstance().fetchBitmap(BitmapInfo.MAIN);
 
     private Container activeContainer;
-
-    private SecondaryLoop secondaryLoop;
     private Form activeForm;
 
     private final Container mainContainer = new Container(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -96,10 +92,7 @@ public class MainController implements FormController, MenuController, GameContr
             throw new IllegalStateException("Form " + activeForm + " is already active");
         }
         activeForm = form;
-        secondaryLoop = Toolkit.getDefaultToolkit().getSystemEventQueue().createSecondaryLoop();
-        if (!secondaryLoop.enter()) {
-            throw new IllegalStateException("Secondary loop error");
-        }
+        platform.startSecondaryLoop();
     }
 
     @Override
@@ -108,9 +101,7 @@ public class MainController implements FormController, MenuController, GameContr
             throw new IllegalArgumentException("Form " + form + " is inactive now");
         }
         activeForm = null;
-        if (!secondaryLoop.exit()) {
-            throw new IllegalStateException("Secondary loop error");
-        }
+        platform.stopSecondaryLoop();
     }
 
     @Override

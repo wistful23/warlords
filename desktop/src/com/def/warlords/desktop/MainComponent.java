@@ -9,6 +9,7 @@ import javax.swing.JComponent;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.SecondaryLoop;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -28,6 +29,8 @@ public class MainComponent extends JComponent implements Platform {
 
     private final Mouse mouse = new Mouse();
 
+    private SecondaryLoop secondaryLoop;
+
     public MainComponent() {
         BitmapFactory.createInstance(this);
         SoundFactory.createInstance(this);
@@ -44,6 +47,28 @@ public class MainComponent extends JComponent implements Platform {
     @Override
     public InputStream getResourceAsStream(String name) {
         return getClass().getResourceAsStream("/" + name);
+    }
+
+    @Override
+    public void startSecondaryLoop() {
+        if (secondaryLoop != null) {
+            throw new IllegalStateException("Secondary loop is already started");
+        }
+        secondaryLoop = getToolkit().getSystemEventQueue().createSecondaryLoop();
+        if (!secondaryLoop.enter()) {
+            throw new IllegalStateException("Cannot start secondary loop");
+        }
+    }
+
+    @Override
+    public void stopSecondaryLoop() {
+        if (secondaryLoop == null) {
+            throw new IllegalStateException("Secondary loop is not started");
+        }
+        if (!secondaryLoop.exit()) {
+            throw new IllegalStateException("Cannot stop secondary loop");
+        }
+        secondaryLoop = null;
     }
 
     @Override

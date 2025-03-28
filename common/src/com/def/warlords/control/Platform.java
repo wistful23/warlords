@@ -14,4 +14,7 @@ public interface Platform {
     void repaint();
 
     InputStream getResourceAsStream(String name) throws IOException;
+
+    void startSecondaryLoop();
+    void stopSecondaryLoop();
 }
