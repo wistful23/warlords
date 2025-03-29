@@ -6,7 +6,6 @@ import com.def.warlords.util.Logger;
 import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -83,9 +82,6 @@ public final class BitmapFactory {
     private BufferedImage loadImage(String fileName, int transparentRGB) {
         BufferedImage image = null;
         try (final InputStream in = platform.getResourceAsStream("img/" + fileName)) {
-            if (in == null) {
-                throw new FileNotFoundException("Image was not found: " + fileName);
-            }
             image = ImageIO.read(in);
         } catch (IOException e) {
             Logger.error("Could not load image: " + fileName);

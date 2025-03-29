@@ -7,7 +7,10 @@ import com.def.warlords.record.RecordOutputStream;
 import com.def.warlords.util.Logger;
 import com.def.warlords.util.Util;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -172,9 +175,6 @@ public class Kingdom implements Record {
 
     private boolean initMap(Platform platform) {
         try (final InputStream in = platform.getResourceAsStream("illuria.map")) {
-            if (in == null) {
-                throw new FileNotFoundException("Map was not found");
-            }
             final byte[] map = new byte[MAP_SIZE * 2];
             final int size = in.read(map);
             if (size < map.length) {
@@ -331,11 +331,8 @@ public class Kingdom implements Record {
         return true;
     }
 
-    private BufferedReader createBufferedReader(Platform platform, String resourceName) throws IOException {
-        final InputStream in = platform.getResourceAsStream(resourceName);
-        if (in == null) {
-            throw new FileNotFoundException("Resource was not found: " + resourceName);
-        }
+    private BufferedReader createBufferedReader(Platform platform, String fileName) throws IOException {
+        final InputStream in = platform.getResourceAsStream(fileName);
         final BufferedReader br = new BufferedReader(new InputStreamReader(in));
         // Skip header.
         if (br.ready()) {

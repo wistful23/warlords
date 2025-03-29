@@ -5,7 +5,6 @@ import com.def.warlords.util.Logger;
 import com.def.warlords.util.Toggle;
 
 import java.io.BufferedInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -53,11 +52,7 @@ public final class SoundFactory {
         try {
             InputStream stream = streams[soundInfo.ordinal()];
             if (stream == null) {
-                final String fileName = soundInfo.getFileName();
-                stream = platform.getResourceAsStream("sound/" + fileName);
-                if (stream == null) {
-                    throw new FileNotFoundException("Sound was not found: " + fileName);
-                }
+                stream = platform.getResourceAsStream("sound/" + soundInfo.getFileName());
                 if (!stream.markSupported()) {
                     stream = new BufferedInputStream(stream);
                 }

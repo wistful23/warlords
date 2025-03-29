@@ -15,6 +15,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 
 import static com.def.warlords.control.common.Dimensions.*;
@@ -45,8 +47,12 @@ public class MainComponent extends JComponent implements Platform {
     }
 
     @Override
-    public InputStream getResourceAsStream(String name) {
-        return getClass().getResourceAsStream("/" + name);
+    public InputStream getResourceAsStream(String fileName) throws IOException {
+        final InputStream in = getClass().getResourceAsStream("/" + fileName);
+        if (in == null) {
+            throw new FileNotFoundException("Resource is not found: " + fileName);
+        }
+        return in;
     }
 
     @Override
