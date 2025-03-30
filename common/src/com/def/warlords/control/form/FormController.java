@@ -1,7 +1,5 @@
 package com.def.warlords.control.form;
 
-import com.def.warlords.sound.Sound;
-import com.def.warlords.sound.SoundInfo;
 import com.def.warlords.util.Timer;
 
 /**
@@ -14,5 +12,4 @@ public interface FormController {
     void deactivateForm(Form form);
 
     Timer createTimer(Runnable listener);
-    Sound createSound(SoundInfo soundInfo, Runnable listener);
 }

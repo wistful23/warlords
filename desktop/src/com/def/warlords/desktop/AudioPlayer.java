@@ -11,13 +11,14 @@ public class AudioPlayer implements Player {
 
     private Clip clip;
 
-    public void init(InputStream in, Runnable listener) throws IOException {
+    public void init(InputStream in, Runnable listener, Runnable repaint) throws IOException {
         try {
             clip = AudioSystem.getClip();
             clip.open(AudioSystem.getAudioInputStream(in));
             clip.addLineListener(e -> {
                 if (e.getType() == LineEvent.Type.STOP) {
                     EventQueue.invokeLater(listener);
+                    repaint.run();
                 }
             });
         } catch (LineUnavailableException | UnsupportedAudioFileException e) {

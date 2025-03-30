@@ -14,7 +14,6 @@ import com.def.warlords.graphics.BitmapFactory;
 import com.def.warlords.graphics.BitmapInfo;
 import com.def.warlords.graphics.Cursor;
 import com.def.warlords.gui.Container;
-import com.def.warlords.sound.Sound;
 import com.def.warlords.sound.SoundFactory;
 import com.def.warlords.sound.SoundInfo;
 import com.def.warlords.util.Logger;
@@ -107,14 +106,6 @@ public class MainController implements FormController, MenuController, GameContr
     @Override
     public Timer createTimer(Runnable listener) {
         return new Timer(() -> {
-            platform.repaint();
-            listener.run();
-        });
-    }
-
-    @Override
-    public Sound createSound(SoundInfo soundInfo, Runnable listener) {
-        return SoundFactory.getInstance().createSound(soundInfo, () -> {
             platform.repaint();
             listener.run();
         });

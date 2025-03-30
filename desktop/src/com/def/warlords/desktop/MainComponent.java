@@ -59,7 +59,7 @@ public class MainComponent extends JComponent implements Platform {
     @Override
     public Player getAudioPlayer(String fileName, Runnable listener) throws IOException {
         final AudioPlayer player = new AudioPlayer();
-        player.init(getResourceAsStream(fileName), listener);
+        player.init(getResourceAsStream(fileName), listener, this::repaint);
         return player;
     }
 

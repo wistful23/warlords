@@ -1,8 +1,6 @@
 package com.def.warlords.control.form;
 
 import com.def.warlords.gui.Container;
-import com.def.warlords.sound.Sound;
-import com.def.warlords.sound.SoundInfo;
 import com.def.warlords.util.Timer;
 
 import static com.def.warlords.control.common.Dimensions.*;
@@ -32,10 +30,6 @@ public class Form extends Container {
 
     Timer createTimer(Runnable listener) {
         return controller.createTimer(listener);
-    }
-
-    Sound createSound(SoundInfo soundInfo, Runnable listener) {
-        return controller.createSound(soundInfo, listener);
     }
 
     void reset() {

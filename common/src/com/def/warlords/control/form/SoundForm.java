@@ -2,6 +2,7 @@ package com.def.warlords.control.form;
 
 import com.def.warlords.graphics.Cursor;
 import com.def.warlords.sound.Sound;
+import com.def.warlords.sound.SoundFactory;
 import com.def.warlords.sound.SoundInfo;
 
 import java.awt.event.MouseEvent;
@@ -23,7 +24,7 @@ public class SoundForm extends EmptyForm {
 
     @Override
     void init() {
-        sound = createSound(soundInfo, this::deactivate);
+        sound = SoundFactory.getInstance().createSound(soundInfo, this::deactivate);
         sound.start();
     }
 
