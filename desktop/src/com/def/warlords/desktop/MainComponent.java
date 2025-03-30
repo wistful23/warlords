@@ -3,6 +3,7 @@ package com.def.warlords.desktop;
 import com.def.warlords.control.MainController;
 import com.def.warlords.control.Platform;
 import com.def.warlords.graphics.BitmapFactory;
+import com.def.warlords.sound.Player;
 import com.def.warlords.sound.SoundFactory;
 
 import javax.swing.JComponent;
@@ -53,6 +54,13 @@ public class MainComponent extends JComponent implements Platform {
             throw new FileNotFoundException("Resource is not found: " + fileName);
         }
         return in;
+    }
+
+    @Override
+    public Player getAudioPlayer(String fileName, Runnable listener) throws IOException {
+        final AudioPlayer player = new AudioPlayer();
+        player.init(getResourceAsStream(fileName), listener);
+        return player;
     }
 
     @Override

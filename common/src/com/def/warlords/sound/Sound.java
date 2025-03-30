@@ -1,13 +1,9 @@
 package com.def.warlords.sound;
 
+import com.def.warlords.control.Platform;
 import com.def.warlords.util.Timer;
 
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineEvent;
-import java.awt.EventQueue;
 import java.io.IOException;
-import java.io.InputStream;
 
 /**
  * @author wistful23
@@ -19,36 +15,23 @@ public class Sound {
 
     private Runnable listener;
 
-    private Clip clip;
+    private Player player;
     private Timer timer;
 
     public Sound(Runnable listener) {
         this.listener = listener;
     }
 
-    public void open(InputStream stream) throws IOException {
-        if (clip != null) {
-            throw new IllegalStateException("Sound is already open");
+    public void init(Platform platform, SoundInfo soundInfo) throws IOException {
+        if (player != null) {
+            throw new IllegalStateException("Sound is already initialized");
         }
-        try {
-            final Clip localClip = AudioSystem.getClip();
-            localClip.open(AudioSystem.getAudioInputStream(stream));
-            localClip.addLineListener(e -> {
-                if (e.getType() == LineEvent.Type.STOP) {
-                    EventQueue.invokeLater(this::notifyListener);
-                }
-            });
-            clip = localClip;
-        } catch (IOException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new IOException(e);
-        }
+        player = platform.getAudioPlayer("sound/" + soundInfo.getFileName(), this::notifyListener);
     }
 
     public void start() {
-        if (clip != null) {
-            clip.start();
+        if (player != null) {
+            player.start();
         } else if (timer == null) {
             timer = new Timer(this::notifyListener);
             timer.start(DELAY_SILENCE);
@@ -57,8 +40,8 @@ public class Sound {
 
     public void stop() {
         listener = null;
-        if (clip != null) {
-            clip.stop();
+        if (player != null) {
+            player.stop();
         } else if (timer != null) {
             timer.stop();
         }
