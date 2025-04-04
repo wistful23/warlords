@@ -32,6 +32,10 @@ public class Form extends Container {
         return controller.createTimer(listener);
     }
 
+    void invokeLater(Runnable action, int delay) {
+        controller.invokeLater(action, delay);
+    }
+
     void reset() {
         clear();
         init();

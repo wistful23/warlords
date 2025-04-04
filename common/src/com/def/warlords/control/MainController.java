@@ -97,7 +97,7 @@ public class MainController implements FormController, MenuController, GameContr
     @Override
     public void deactivateForm(Form form) {
         if (activeForm != form) {
-            throw new IllegalArgumentException("Form " + form + " is inactive now");
+            return;
         }
         activeForm = null;
         platform.stopSecondaryLoop();
@@ -111,6 +111,7 @@ public class MainController implements FormController, MenuController, GameContr
         });
     }
 
+    @Override
     public void invokeLater(Runnable action, int delay) {
         platform.invokeLater(action, delay);
     }
@@ -139,11 +140,7 @@ public class MainController implements FormController, MenuController, GameContr
             throw new IllegalStateException("Info Screen has to be visible");
         }
         infoScreen.setVisible(false);
-        if (timed) {
-            new TimedMessageForm(this, text).activate();
-        } else {
-            new MessageForm(this, text).activate();
-        }
+        new MessageForm(this, text, timed).activate();
         infoScreen.setVisible(true);
     }
 

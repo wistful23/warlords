@@ -12,4 +12,5 @@ public interface FormController {
     void deactivateForm(Form form);
 
     Timer createTimer(Runnable listener);
+    void invokeLater(Runnable action, int delay);
 }
