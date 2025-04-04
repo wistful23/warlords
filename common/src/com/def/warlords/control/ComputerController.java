@@ -52,7 +52,7 @@ public class ComputerController implements PlayerController {
         if (controller.isCurrentPlayerObserved()) {
             controller.showCapital();
         }
-        controller.createTimer(() -> moveNextGroup(true)).start(DELAY_TURN);
+        controller.invokeLater(() -> moveNextGroup(true), DELAY_TURN);
     }
 
     @Override

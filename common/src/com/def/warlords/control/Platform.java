@@ -20,4 +20,6 @@ public interface Platform {
 
     void startSecondaryLoop();
     void stopSecondaryLoop();
+
+    void invokeLater(Runnable action, int delay);
 }

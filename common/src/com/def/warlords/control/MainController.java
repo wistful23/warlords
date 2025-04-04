@@ -111,6 +111,10 @@ public class MainController implements FormController, MenuController, GameContr
         });
     }
 
+    public void invokeLater(Runnable action, int delay) {
+        platform.invokeLater(action, delay);
+    }
+
     public void enableActiveContainer() {
         if (activeContainer.isEnabled()) {
             throw new IllegalStateException("Active container is already enabled");

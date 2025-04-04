@@ -7,14 +7,9 @@ import com.def.warlords.sound.Player;
 import com.def.warlords.sound.SoundFactory;
 
 import javax.swing.JComponent;
-import java.awt.Component;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.SecondaryLoop;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import javax.swing.Timer;
+import java.awt.*;
+import java.awt.event.*;
 import java.awt.image.BufferedImage;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -83,6 +78,21 @@ public class MainComponent extends JComponent implements Platform {
             throw new IllegalStateException("Cannot stop secondary loop");
         }
         secondaryLoop = null;
+    }
+
+    @Override
+    public void invokeLater(Runnable action, int delay) {
+        if (delay > 0) {
+            final Timer timer = new Timer(delay, (ActionEvent e) -> {
+                repaint();
+                action.run();
+            });
+            timer.setRepeats(false);
+            timer.start();
+        } else {
+            EventQueue.invokeLater(action);
+            repaint();
+        }
     }
 
     @Override

@@ -56,13 +56,13 @@ public class PlayingMap extends Component {
 
     private Tile selectedTile;
     private final ArmySelection selection = new ArmySelection();
+    private Runnable moveSelection;
 
     private boolean productionMode;
     private boolean razeMode;
     private SearchMode searchMode = SearchMode.NONE;
     private Tile combatTile;
 
-    private Timer armyMoveTimer;
     private Timer armyFrameTimer;
     private int armyFrameIndex;
 
@@ -178,13 +178,13 @@ public class PlayingMap extends Component {
         if (path == null) {
             return false;
         }
-        Util.assertNull(armyMoveTimer);
+        Util.assertNull(moveSelection);
         if (controller.isCurrentPlayerObserved()) {
             final boolean disabled = controller.disableActiveContainer();
-            armyMoveTimer = controller.createTimer(() -> {
+            moveSelection = () -> {
                 final boolean finished = path.isEmpty();
                 if (finished || !move(path.remove())) {
-                    armyMoveTimer = null;
+                    moveSelection = null;
                     if (disabled) {
                         controller.enableActiveContainer();
                     }
@@ -193,12 +193,12 @@ public class PlayingMap extends Component {
                     }
                     return;
                 }
-                armyMoveTimer.start(DELAY_ARMY_MOVE);
-            });
-            armyMoveTimer.start(DELAY_ARMY_MOVE);
+                controller.invokeLater(moveSelection, DELAY_ARMY_MOVE);
+            };
+            controller.invokeLater(moveSelection, DELAY_ARMY_MOVE);
         } else {
             final Consumer<Boolean> callbackLater =
-                    finished -> controller.createTimer(() -> callback.accept(finished)).start(0);
+                    finished -> controller.invokeLater(() -> callback.accept(finished), 0);
             boolean finished = true;
             for (final Tile to : path) {
                 if (!controller.getGame().move(selection, to)) {
