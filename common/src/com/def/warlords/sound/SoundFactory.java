@@ -40,17 +40,16 @@ public final class SoundFactory {
         return toggle;
     }
 
-    public Sound createSound(SoundInfo soundInfo, Runnable listener) {
-        final Sound sound = new Sound(listener);
+    public Player getAudioPlayer(SoundInfo soundInfo, Runnable listener) {
         if (toggle.isOff()) {
-            return sound;
+            return null;
         }
         try {
-            sound.init(platform, soundInfo);
+            return platform.getAudioPlayer("sound/" + soundInfo.getFileName(), listener);
         } catch (IOException e) {
-            Logger.error("Could not initialize sound: " + soundInfo);
+            Logger.error("Cannot get audio player for " + soundInfo);
             e.printStackTrace();
         }
-        return sound;
+        return null;
     }
 }

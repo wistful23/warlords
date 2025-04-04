@@ -24,7 +24,6 @@ public class Form extends Container {
     }
 
     public final void deactivate() {
-        close();
         controller.deactivateForm(this);
     }
 
@@ -42,8 +41,5 @@ public class Form extends Container {
     }
 
     void init() {
-    }
-
-    void close() {
     }
 }
