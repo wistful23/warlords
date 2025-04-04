@@ -1,7 +1,5 @@
 package com.def.warlords.util;
 
-import java.awt.EventQueue;
-
 /**
  * @author wistful23
  * @version 1.23
@@ -19,22 +17,14 @@ public class Timer {
     }
 
     public void start(int delay) {
-        start(delay, false);
-    }
-
-    public void start(int delay, boolean repeat) {
         stop();
         timerTask = new java.util.TimerTask() {
             @Override
             public void run() {
-                EventQueue.invokeLater(listener);
+                listener.run();
             }
         };
-        if (repeat) {
-            timer.schedule(timerTask, delay, delay);
-        } else {
-            timer.schedule(timerTask, delay);
-        }
+        timer.schedule(timerTask, delay, delay);
     }
 
     public void stop() {

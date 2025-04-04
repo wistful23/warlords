@@ -105,10 +105,7 @@ public class MainController implements FormController, MenuController, GameContr
 
     @Override
     public Timer createTimer(Runnable listener) {
-        return new Timer(() -> {
-            platform.repaint();
-            listener.run();
-        });
+        return new Timer(() -> platform.invokeLater(listener, 0));
     }
 
     @Override

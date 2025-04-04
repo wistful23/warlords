@@ -495,6 +495,6 @@ public class PlayingMap extends Component {
                 armyFrameIndex = 0;
             }
         });
-        armyFrameTimer.start(DELAY_FRAME_ANIMATION, true);
+        armyFrameTimer.start(DELAY_FRAME_ANIMATION);
     }
 }

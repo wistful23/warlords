@@ -76,7 +76,7 @@ public class InputBox extends Component {
         }
         currentIndex = 0;
         editing = true;
-        cursorTimer.start(DELAY_CURSOR_ANIMATION, true);
+        resetCursor();
     }
 
     public void commitEditing() {
@@ -169,7 +169,7 @@ public class InputBox extends Component {
     }
 
     private void resetCursor() {
-        cursorTimer.start(DELAY_CURSOR_ANIMATION, true);
+        cursorTimer.start(DELAY_CURSOR_ANIMATION);
         cursorColor = Palette.WHITE;
     }
 }
