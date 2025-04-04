@@ -9,7 +9,6 @@ import com.def.warlords.gui.GrayPanel;
 import com.def.warlords.gui.Image;
 import com.def.warlords.gui.Label;
 import com.def.warlords.gui.Rectangle;
-import com.def.warlords.util.Timer;
 import com.def.warlords.util.Util;
 
 import java.awt.event.KeyEvent;
@@ -39,11 +38,10 @@ public class CombatForm extends Form {
     private Label messageLabel;
     private final Queue<Image> attackingArmyImages = new ArrayDeque<>();
     private final Queue<Image> defendingArmyImages = new ArrayDeque<>();
-    private Image killedArmyImage, bloodImage;
+    private Runnable removeArmy;
 
+    private int currentRoundIndex;
     private long lastRoundTime;
-    private int roundCount;
-    private Timer nextRoundTimer, removeArmyTimer;
 
     public CombatForm(FormController controller, Game game, ArmyList attackingArmies, ArmyList defendingArmies,
                       Tile tile, List<Boolean> protocol) {
@@ -128,42 +126,48 @@ public class CombatForm extends Form {
             final int x = 187 - attackingArmies.size() * ARMY_WIDTH / 2 + index * ARMY_WIDTH;
             attackingArmyImages.add(add(new Image(x, 222, Sprites.getArmySprite(attackingArmies.get(index)))));
         }
-        // Timers.
-        nextRoundTimer = createTimer(this::nextRound);
-        removeArmyTimer = createTimer(this::removeArmy);
         // Start.
         if (game.isComputerTurn()) {
-            nextRoundTimer.start(DELAY_NEXT_ROUND);
+            invokeLater(() -> nextRound(0), DELAY_NEXT_ROUND);
         } else {
-            nextRound();
+            nextRound(0);
         }
     }
 
     @Override
     public Cursor getCursor(MouseEvent e) {
-        return game.isComputerTurn() ? Cursor.EMPTY : roundCount <= protocol.size() ? Cursor.SWORD : Cursor.MODAL;
+        return game.isComputerTurn() ? Cursor.EMPTY
+                                     : currentRoundIndex <= protocol.size() ? Cursor.SWORD : Cursor.MODAL;
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        nextRound();
+        nextRound(currentRoundIndex);
     }
 
     @Override
     public void mousePressed(MouseEvent e) {
-        nextRound();
+        nextRound(currentRoundIndex);
     }
 
-    private void nextRound() {
-        if (System.currentTimeMillis() - lastRoundTime < DELAY_AFTER_ROUND) {
+    private void nextRound(int roundIndex) {
+        if (roundIndex != currentRoundIndex || System.currentTimeMillis() - lastRoundTime < DELAY_AFTER_ROUND) {
             return;
         }
-        nextRoundTimer.stop();
-        removeArmy();
-        if (roundCount < protocol.size()) {
-            killArmy();
-            nextRoundTimer.start(DELAY_NEXT_ROUND);
-        } else if (roundCount == protocol.size()) {
+        if (removeArmy != null) {
+            removeArmy.run();
+        }
+        if (roundIndex < protocol.size()) {
+            final Image killedArmyImage = protocol.get(roundIndex) ? defendingArmyImages.remove()
+                                                                   : attackingArmyImages.remove();
+            final Image bloodImage = add(new Image(killedArmyImage.getX(), killedArmyImage.getY(), Sprites.ARMY_BLOOD));
+            removeArmy = () -> {
+                remove(killedArmyImage);
+                remove(bloodImage);
+            };
+            invokeLater(removeArmy, DELAY_REMOVE_ARMY);
+            invokeLater(() -> nextRound(roundIndex + 1), DELAY_NEXT_ROUND);
+        } else if (roundIndex == protocol.size()) {
             final Hero hero = attackingArmies.getHero();
             if (game.isComputerTurn()) {
                 final String defendingEmpireName = defendingArmies.getEmpire().getName();
@@ -173,7 +177,7 @@ public class CombatForm extends Form {
                 } else {
                     messageLabel.setText(defendingEmpireName + ": you are victorious!");
                 }
-                nextRoundTimer.start(DELAY_COMPUTER_MESSAGE);
+                invokeLater(() -> nextRound(roundIndex + 1), DELAY_COMPUTER_MESSAGE);
             } else {
                 if (defendingArmyImages.isEmpty()) {
                     if (protocol.isEmpty()) {
@@ -186,7 +190,7 @@ public class CombatForm extends Form {
                     messageLabel.setText("You have been defeated!");
                 }
             }
-        } else if (roundCount == protocol.size() + 1) {
+        } else if (roundIndex == protocol.size() + 1) {
             final City city = tile.getCity();
             if (defendingArmyImages.isEmpty() && !game.isComputerTurn() && city != null && !city.isNeutral()) {
                 messageLabel.setText("Your armies pillage " + city.getEmpire().getPillagedGold() + " gp!");
@@ -194,34 +198,15 @@ public class CombatForm extends Form {
                 deactivate();
                 return;
             }
-        } else if (roundCount == protocol.size() + 2) {
+        } else if (roundIndex == protocol.size() + 2) {
             deactivate();
             return;
         } else {
             // This point has to be unreachable.
             Util.fail();
         }
+        ++currentRoundIndex;
         lastRoundTime = System.currentTimeMillis();
-        ++roundCount;
-    }
-
-    private void killArmy() {
-        Util.assertNull(killedArmyImage);
-        Util.assertNull(bloodImage);
-        killedArmyImage = protocol.get(roundCount) ? defendingArmyImages.remove() : attackingArmyImages.remove();
-        bloodImage = add(new Image(killedArmyImage.getX(), killedArmyImage.getY(), Sprites.ARMY_BLOOD));
-        removeArmyTimer.start(DELAY_REMOVE_ARMY);
-    }
-
-    private void removeArmy() {
-        if (killedArmyImage == null) {
-            return;
-        }
-        Util.assertNotNull(bloodImage);
-        remove(killedArmyImage);
-        remove(bloodImage);
-        killedArmyImage = bloodImage = null;
-        removeArmyTimer.stop();
     }
 
     private boolean findTerrainAround(Tile tile, TerrainType terrain) {
