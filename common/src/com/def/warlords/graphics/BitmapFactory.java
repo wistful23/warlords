@@ -3,11 +3,9 @@ package com.def.warlords.graphics;
 import com.def.warlords.control.Platform;
 import com.def.warlords.util.Logger;
 
-import javax.imageio.ImageIO;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -40,14 +38,23 @@ public final class BitmapFactory {
 
     private BitmapFactory(Platform platform) {
         this.platform = platform;
-        ImageIO.setUseCache(false);
     }
 
     public Bitmap fetchBitmap(BitmapInfo bitmapInfo) {
         final int bitmapIndex = bitmapInfo.ordinal();
         Bitmap bitmap = bitmaps[bitmapIndex];
         if (bitmap == null) {
-            final BufferedImage image = loadImage(bitmapInfo.getFileName(), bitmapInfo.getTransparentRGB());
+            BufferedImage image = null;
+            try {
+                image = platform.getBufferedImage("img/" + bitmapInfo.getFileName());
+            } catch (IOException e) {
+                Logger.error("Cannot get buffered image for " + bitmapInfo);
+                e.printStackTrace();
+            }
+            final int transparentRGB = bitmapInfo.getTransparentRGB();
+            if (image != null && transparentRGB != 0) {
+                image = transformImage(image, transparentRGB, 0);
+            }
             bitmap = new Bitmap(image);
             bitmaps[bitmapIndex] = bitmap;
         }
@@ -77,20 +84,6 @@ public final class BitmapFactory {
         image = transformImage(image, 0xff706040, Palette.GRAY);
         image = transformImage(image, 0xff504030, Palette.GRAY_DARK);
         return new Bitmap(image);
-    }
-
-    private BufferedImage loadImage(String fileName, int transparentRGB) {
-        BufferedImage image = null;
-        try (final InputStream in = platform.getResourceAsStream("img/" + fileName)) {
-            image = ImageIO.read(in);
-        } catch (IOException e) {
-            Logger.error("Could not load image: " + fileName);
-            e.printStackTrace();
-        }
-        if (image != null && transparentRGB != 0) {
-            image = transformImage(image, transparentRGB, 0);
-        }
-        return image;
     }
 
     private BufferedImage transformImage(BufferedImage sourceImage, int sourceRGB, Color destinationColor) {

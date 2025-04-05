@@ -2,6 +2,7 @@ package com.def.warlords.control;
 
 import com.def.warlords.sound.Player;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -13,9 +14,8 @@ import java.io.InputStream;
  */
 public interface Platform {
 
-    void repaint();
-
     InputStream getResourceAsStream(String fileName) throws IOException;
+    BufferedImage getBufferedImage(String fileName) throws IOException;
     Player getAudioPlayer(String fileName, Runnable listener) throws IOException;
 
     void startSecondaryLoop();

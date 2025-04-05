@@ -6,6 +6,7 @@ import com.def.warlords.graphics.BitmapFactory;
 import com.def.warlords.sound.Player;
 import com.def.warlords.sound.SoundFactory;
 
+import javax.imageio.ImageIO;
 import javax.swing.JComponent;
 import javax.swing.Timer;
 import java.awt.*;
@@ -30,6 +31,7 @@ public class MainComponent extends JComponent implements Platform {
     private SecondaryLoop secondaryLoop;
 
     public MainComponent() {
+        ImageIO.setUseCache(false);
         BitmapFactory.createInstance(this);
         SoundFactory.createInstance(this);
         this.controller = new MainController(this);
@@ -49,6 +51,11 @@ public class MainComponent extends JComponent implements Platform {
             throw new FileNotFoundException("Resource is not found: " + fileName);
         }
         return in;
+    }
+
+    @Override
+    public BufferedImage getBufferedImage(String fileName) throws IOException {
+        return ImageIO.read(getResourceAsStream(fileName));
     }
 
     @Override
