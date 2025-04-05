@@ -8,13 +8,7 @@ import com.def.warlords.util.DeveloperMode;
 import com.def.warlords.util.Logger;
 import com.def.warlords.util.Util;
 
-import javax.imageio.ImageIO;
 import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-
-import static com.def.warlords.control.common.Dimensions.*;
 
 /**
  * @author wistful23
@@ -45,18 +39,6 @@ public class DeveloperController {
         // Turn on/off the verbose logging.
         if (keyCode == KeyEvent.VK_L) {
             Logger.invertVerbose();
-            return true;
-        }
-        // Take a screenshot.
-        if (keyCode == KeyEvent.VK_S) {
-            final BufferedImage image = new BufferedImage(SCREEN_WIDTH, SCREEN_HEIGHT, BufferedImage.TYPE_INT_ARGB);
-            controller.paint(image.getGraphics());
-            try {
-                ImageIO.write(image, "png", new File("./shots/shot.png"));
-                Logger.info("Captured screenshot");
-            } catch (IOException exception) {
-                exception.printStackTrace();
-            }
             return true;
         }
         final Game game = controller.getGame();
