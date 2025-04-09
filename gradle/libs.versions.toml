@@ -1,0 +1,7 @@
+[versions]
+slf4jSimple = "2.0.16"
+testng = "7.10.2"
+
+[libraries]
+slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4jSimple" }
+testng = { module = "org.testng:testng", version.ref = "testng" }

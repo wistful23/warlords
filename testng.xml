@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<suite name="warlords" parallel="false">
-    <test name="model">
-        <classes>
-            <class name="com.def.warlords.game.model.ArmyListTest"/>
-        </classes>
-    </test>
-</suite>
