@@ -1,7 +1,17 @@
 [versions]
+activityKtx = "1.10.1"
+material = "1.12.0"
+agp = "8.7.3"
+kotlin = "2.1.10"
 slf4jSimple = "2.0.16"
 testng = "7.10.2"
 
 [libraries]
+activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activityKtx" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 slf4j-simple = { module = "org.slf4j:slf4j-simple", version.ref = "slf4jSimple" }
 testng = { module = "org.testng:testng", version.ref = "testng" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
