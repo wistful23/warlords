@@ -15,7 +15,7 @@ android {
         versionName = "1.0"
     }
 
-    // TODO(wistful23): Migrate to `VERSION_11`, `VERSION_17` or `VERSION_21`.
+    // TODO(#10): Migrate to `VERSION_11`, `VERSION_17` or `VERSION_21`.
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
