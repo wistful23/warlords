@@ -15,7 +15,8 @@ import java.util.List;
  */
 public class Player implements Record {
 
-    private static final int HERO_OFFER_TURN_INTERVAL = 5;
+    private static final int MIN_HERO_OFFER_TURN_INTERVAL = 5;
+    private static final int HERO_OFFER_TURN_FACTOR = 10;
 
     private static final int MIN_HERO_OFFER_CHANCE = 10;
     private static final int MAX_HERO_OFFER_CHANCE = 3;
@@ -31,7 +32,7 @@ public class Player implements Record {
 
     private boolean observed;
     private boolean destroyed;
-    private int lastHeroTurnCount;
+    private int nextHeroOfferTurnCount;
     private ArmyGroup currentGroup;
 
     public Player() {
@@ -113,7 +114,7 @@ public class Player implements Record {
                 throw new IllegalStateException("Hero name is null");
             }
             Util.assertNotNull(capital.hireHero(heroName, false));
-            lastHeroTurnCount = turnCount;
+            nextHeroOfferTurnCount = MIN_HERO_OFFER_TURN_INTERVAL;
             controller.selectProduction(capital);
             controller.playTurn();
             return;
@@ -155,8 +156,7 @@ public class Player implements Record {
 
     private void hireHero(TurnController controller, int turnCount) {
         final int heroCount = empire.getHeroCount();
-        if (heroCount >= Empire.MAX_HERO_COUNT ||
-                (heroCount > 0 && turnCount < lastHeroTurnCount + HERO_OFFER_TURN_INTERVAL)) {
+        if (heroCount >= Empire.MAX_HERO_COUNT || (heroCount > 0 && turnCount < nextHeroOfferTurnCount)) {
             return;
         }
         final int gold = empire.getGold();
@@ -191,7 +191,7 @@ public class Player implements Record {
             controller.onAlliesBrought(allyCount);
             hero.joinAllies(kingdom, kingdom.getRandomAllyFactory(), allyCount);
         }
-        lastHeroTurnCount = turnCount;
+        nextHeroOfferTurnCount = turnCount + Math.max(MIN_HERO_OFFER_TURN_INTERVAL, turnCount / HERO_OFFER_TURN_FACTOR);
         // BUG: W doesn't update Playing Map.
     }
 
@@ -248,7 +248,7 @@ public class Player implements Record {
         out.writeEnum(level);
         out.writeBoolean(observed);
         out.writeBoolean(destroyed);
-        out.writeInt(lastHeroTurnCount);
+        out.writeInt(nextHeroOfferTurnCount);
         out.writeRecord(currentGroup);
     }
 
@@ -259,7 +259,7 @@ public class Player implements Record {
         level = in.readEnum(PlayerLevel.values());
         observed = in.readBoolean();
         destroyed = in.readBoolean();
-        lastHeroTurnCount = in.readInt();
+        nextHeroOfferTurnCount = in.readInt();
         currentGroup = in.readRecord(ArmyGroup::new);
     }
 }
