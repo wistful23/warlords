@@ -14,7 +14,7 @@
 
     <target name="build" description="Compile the sources">
         <mkdir dir="${build.dir}"/>
-        <javac destdir="${build.dir}" includeantruntime="false" source="8" target="8">
+        <javac destdir="${build.dir}" includeantruntime="false" source="21" target="21">
             <src path="${common.src.dir}"/>
             <src path="${desktop.src.dir}"/>
         </javac>
