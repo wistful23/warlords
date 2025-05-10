@@ -99,7 +99,7 @@ class MainView(private val context: Context) : View(context), Platform {
             val metrics = context.resources.displayMetrics
             val x = event.x.toInt() * Dimensions.SCREEN_WIDTH / metrics.widthPixels
             val y = event.y.toInt() * Dimensions.SCREEN_HEIGHT / metrics.heightPixels
-            val e = MouseEvent(x, y, clickCount)
+            val e = MouseEvent(x, y)
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
                     if (System.currentTimeMillis() - lastUpEventTime < ViewConfiguration.getDoubleTapTimeout()) {
@@ -107,6 +107,7 @@ class MainView(private val context: Context) : View(context), Platform {
                     } else {
                         clickCount = 1
                     }
+                    e.clickCount = clickCount
                     thread.post { controller.mousePressed(e) }
                 }
 
