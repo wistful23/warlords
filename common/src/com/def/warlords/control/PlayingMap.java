@@ -1,5 +1,6 @@
 package com.def.warlords.control;
 
+import com.def.warlords.control.form.ProductionExForm;
 import com.def.warlords.game.ArmySelection;
 import com.def.warlords.game.Game;
 import com.def.warlords.game.model.*;
@@ -405,6 +406,14 @@ public class PlayingMap extends Component {
         }
         // Info.
         selectedTile = tile;
+        // Production.
+        if (e.getClickCount() > 1) {
+            // NOTE: W doesn't display the production form on double city click.
+            final City city = tile.getCity();
+            if (city != null && city.getEmpire() == empire) {
+                new ProductionExForm(controller, city).activate();
+            }
+        }
         return false;
     }
 
