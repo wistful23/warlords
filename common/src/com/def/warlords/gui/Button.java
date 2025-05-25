@@ -43,10 +43,12 @@ public class Button extends Component {
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {
+    public boolean mousePressed(MouseEvent e) {
         if (!selected) {
             pressed = contains(e.getPoint());
+            return true;
         }
+        return false;
     }
 
     @Override
@@ -65,6 +67,6 @@ public class Button extends Component {
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        mousePressed(e);
+        pressed = contains(e.getPoint());
     }
 }

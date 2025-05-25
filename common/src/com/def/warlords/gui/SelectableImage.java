@@ -36,10 +36,11 @@ public class SelectableImage extends Component {
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {
+    public boolean mousePressed(MouseEvent e) {
         selected = true;
         if (listener != null) {
             listener.imageClicked(this);
         }
+        return false;
     }
 }

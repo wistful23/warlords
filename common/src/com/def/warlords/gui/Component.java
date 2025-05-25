@@ -88,15 +88,17 @@ public class Component {
         return Cursor.DEFAULT;
     }
 
-    public void keyPressed(KeyEvent e) {
-    }
-
-    public void mousePressed(MouseEvent e) {
+    // The subclass has to return true to make this component active.
+    public boolean mousePressed(MouseEvent e) {
+        return false;
     }
 
     public void mouseReleased(MouseEvent e) {
     }
 
     public void mouseDragged(MouseEvent e) {
+    }
+
+    public void keyPressed(KeyEvent e) {
     }
 }

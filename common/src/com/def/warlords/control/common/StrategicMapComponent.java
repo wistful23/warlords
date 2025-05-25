@@ -101,8 +101,9 @@ public class StrategicMapComponent extends Component {
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {
+    public boolean mousePressed(MouseEvent e) {
         positionSelected((e.getX() - MAP_X) / 2, (e.getY() - MAP_Y) / 2);
+        return true;
     }
 
     @Override

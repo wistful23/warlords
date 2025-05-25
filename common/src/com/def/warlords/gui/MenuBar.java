@@ -39,9 +39,11 @@ public class MenuBar extends Container {
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {
+    public boolean mousePressed(MouseEvent e) {
         setVisible(true);
         super.mousePressed(e);
+        // Always make this menu bar active.
+        return true;
     }
 
     @Override
@@ -58,8 +60,8 @@ public class MenuBar extends Container {
                 if (activeComponent != null) {
                     activeComponent.setSelected(false);
                 }
+                component.setSelected(true);
                 activeComponent = component;
-                activeComponent.setSelected(true);
                 break;
             }
         }

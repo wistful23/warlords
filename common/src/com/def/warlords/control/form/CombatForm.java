@@ -141,12 +141,13 @@ public class CombatForm extends Form {
     }
 
     @Override
-    public void keyPressed(KeyEvent e) {
+    public boolean mousePressed(MouseEvent e) {
         nextRound(currentRoundIndex);
+        return false;
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {
+    public void keyPressed(KeyEvent e) {
         nextRound(currentRoundIndex);
     }
 

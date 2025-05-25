@@ -29,15 +29,17 @@ public class Container extends Component {
     }
 
     public void remove(Component component) {
-        components.remove(component);
-        if (component == activeComponent) {
-            activeComponent = null;
+        if (activeComponent != null) {
+            throw new IllegalStateException("Container has active component");
         }
+        components.remove(component);
     }
 
     public void clear() {
+        if (activeComponent != null) {
+            throw new IllegalStateException("Container has active component");
+        }
         components.clear();
-        activeComponent = null;
     }
 
     @Override
@@ -69,6 +71,42 @@ public class Container extends Component {
     }
 
     @Override
+    public boolean mousePressed(MouseEvent e) {
+        if (activeComponent != null) {
+            throw new IllegalStateException("Container has active component");
+        }
+        if (!isEnabled()) {
+            return false;
+        }
+        for (final Component component : Util.reverse(components)) {
+            if (component.isEnabled() && component.contains(e.getPoint())) {
+                if (component.mousePressed(e)) {
+                    activeComponent = component;
+                    return true;
+                }
+                return false;
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        if (activeComponent != null) {
+            final Component component = activeComponent;
+            activeComponent = null;
+            component.mouseReleased(e);
+        }
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        if (activeComponent != null) {
+            activeComponent.mouseDragged(e);
+        }
+    }
+
+    @Override
     public void keyPressed(KeyEvent e) {
         if (!isEnabled()) {
             return;
@@ -77,36 +115,6 @@ public class Container extends Component {
             if (component.isEnabled()) {
                 component.keyPressed(e);
             }
-        }
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-        activeComponent = null;
-        if (!isEnabled()) {
-            return;
-        }
-        for (final Component component : Util.reverse(components)) {
-            if (component.isEnabled() && component.contains(e.getPoint())) {
-                activeComponent = component;
-                activeComponent.mousePressed(e);
-                break;
-            }
-        }
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        if (activeComponent != null) {
-            activeComponent.mouseReleased(e);
-            activeComponent = null;
-        }
-    }
-
-    @Override
-    public void mouseDragged(MouseEvent e) {
-        if (activeComponent != null) {
-            activeComponent.mouseDragged(e);
         }
     }
 }

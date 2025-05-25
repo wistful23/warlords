@@ -358,6 +358,57 @@ public class PlayingMap extends Component {
     }
 
     @Override
+    public boolean mousePressed(MouseEvent e) {
+        selectedTile = null;
+        final Game game = controller.getGame();
+        final Kingdom kingdom = game.getKingdom();
+        final int sx = (e.getX() - MAP_X) / TILE_WIDTH + px;
+        final int sy = (e.getY() - MAP_Y) / TILE_HEIGHT + py;
+        final Tile tile = kingdom.getTile(sx, sy);
+        Util.assertNotNull(tile);
+        // Production.
+        if (productionMode) {
+            controller.getProductionScreen().notifyCity(tile.getCity());
+            return false;
+        }
+        // Info.
+        if (e.isShiftDown()) {
+            selectedTile = tile;
+            return false;
+        }
+        // Reset.
+        if (!selection.isEmpty() && (e.isControlDown() || e.getButton() == MouseEvent.BUTTON3)) {
+            selection.reset();
+            return false;
+        }
+        // Move.
+        final ArmyGroup group = tile.getGroup();
+        if (!selection.isEmpty() && selection.getSelectedGroup() != group) {
+            if (kingdom.getNeighborTiles(selection.getSelectedGroup().getTile(), false).contains(tile)) {
+                move(tile);
+            } else {
+                moveArmySelection(tile, true, null);
+            }
+            return false;
+        }
+        // Select.
+        final Empire empire = game.getCurrentPlayer().getEmpire();
+        if (group != null && group.getEmpire() == empire) {
+            startArmyFrameAnimation();
+            if (e.isAltDown() || e.getClickCount() > 1) {
+                selection.selectAll(group, false);
+            } else {
+                selection.select(group);
+            }
+            updateArmySelection(Army.State.ACTIVE);
+            return false;
+        }
+        // Info.
+        selectedTile = tile;
+        return false;
+    }
+
+    @Override
     public void keyPressed(KeyEvent e) {
         final int keyCode = e.getKeyCode();
         // Next.
@@ -399,56 +450,6 @@ public class PlayingMap extends Component {
             final Tile tile = controller.getGame().getKingdom().getTile(sx + dx, sy + dy);
             move(tile);
         }
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-        selectedTile = null;
-        final Game game = controller.getGame();
-        final Kingdom kingdom = game.getKingdom();
-        final int sx = (e.getX() - MAP_X) / TILE_WIDTH + px;
-        final int sy = (e.getY() - MAP_Y) / TILE_HEIGHT + py;
-        final Tile tile = kingdom.getTile(sx, sy);
-        Util.assertNotNull(tile);
-        // Production.
-        if (productionMode) {
-            controller.getProductionScreen().notifyCity(tile.getCity());
-            return;
-        }
-        // Info.
-        if (e.isShiftDown()) {
-            selectedTile = tile;
-            return;
-        }
-        // Reset.
-        if (!selection.isEmpty() && (e.isControlDown() || e.getButton() == MouseEvent.BUTTON3)) {
-            selection.reset();
-            return;
-        }
-        // Move.
-        final ArmyGroup group = tile.getGroup();
-        if (!selection.isEmpty() && selection.getSelectedGroup() != group) {
-            if (kingdom.getNeighborTiles(selection.getSelectedGroup().getTile(), false).contains(tile)) {
-                move(tile);
-            } else {
-                moveArmySelection(tile, true, null);
-            }
-            return;
-        }
-        // Select.
-        final Empire empire = game.getCurrentPlayer().getEmpire();
-        if (group != null && group.getEmpire() == empire) {
-            startArmyFrameAnimation();
-            if (e.isAltDown() || e.getClickCount() > 1) {
-                selection.selectAll(group, false);
-            } else {
-                selection.select(group);
-            }
-            updateArmySelection(Army.State.ACTIVE);
-            return;
-        }
-        // Info.
-        selectedTile = tile;
     }
 
     private boolean move(Tile tile) {

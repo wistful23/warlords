@@ -18,22 +18,6 @@ public class SwitchButton extends Button {
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {
-        pressed = contains(e.getPoint());
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-        if (pressed) {
-            pressed = false;
-            selected = !selected;
-            if (listener != null) {
-                listener.buttonClicked(this);
-            }
-        }
-    }
-
-    @Override
     public void paint(Graphics g) {
         final Bitmap bitmap = BitmapFactory.getInstance().fetchBitmap(BitmapInfo.ARMIES);
         if (!isEnabled()) {
@@ -51,6 +35,23 @@ public class SwitchButton extends Button {
                 bitmap.drawSprite(g, x, y, width, height, 365, 352);
             } else {
                 bitmap.drawSprite(g, x, y, width, height, 333, 352);
+            }
+        }
+    }
+
+    @Override
+    public boolean mousePressed(MouseEvent e) {
+        pressed = contains(e.getPoint());
+        return true;
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        if (pressed) {
+            pressed = false;
+            selected = !selected;
+            if (listener != null) {
+                listener.buttonClicked(this);
             }
         }
     }

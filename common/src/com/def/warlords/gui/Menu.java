@@ -94,8 +94,9 @@ public class Menu extends Container {
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {
+    public boolean mousePressed(MouseEvent e) {
         setSelected(true);
+        return true;
     }
 
     @Override
@@ -112,8 +113,8 @@ public class Menu extends Container {
         }
         for (final Component component : components) {
             if (component.isEnabled() && component.contains(e.getPoint())) {
+                component.setSelected(true);
                 activeComponent = component;
-                activeComponent.setSelected(true);
                 break;
             }
         }

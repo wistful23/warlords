@@ -51,17 +51,17 @@ public class MenuItem extends Component {
     }
 
     @Override
-    public void keyPressed(KeyEvent e) {
-        if (keyCode == e.getKeyCode() && keyModifier == e.getModifiersEx()) {
-            onSelected();
-        }
-    }
-
-    @Override
     public void mouseReleased(MouseEvent e) {
         if (selected) {
             onSelected();
             selected = false;
+        }
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (keyCode == e.getKeyCode() && keyModifier == e.getModifiersEx()) {
+            onSelected();
         }
     }
 

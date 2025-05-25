@@ -41,12 +41,13 @@ public class SoundForm extends Form {
     }
 
     @Override
-    public void keyPressed(KeyEvent e) {
+    public boolean mousePressed(MouseEvent e) {
         stop();
+        return false;
     }
 
     @Override
-    public void mousePressed(MouseEvent e) {
+    public void keyPressed(KeyEvent e) {
         stop();
     }
 
