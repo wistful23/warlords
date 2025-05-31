@@ -229,8 +229,10 @@ public final class Computer {
         while (!queue.isEmpty()) {
             final Tile from = queue.poll();
             final int dist = distances.get(from) + 1;
-            if (dist > commonDistLimit || currentCityWeight <= getMinCityWeight(dist)) {
-                return bestTarget != null ? bestTarget : allowFallback ? fallbackTarget : null;
+            final boolean canHide = canHideHero && bestTarget == null;
+            final boolean canSearch = canSearchBuildings && (canSearchAllBuildings || dist <= ArmyGroup.MAX_ARMY_COUNT);
+            if (!canHide && !canSearch && (dist > commonDistLimit || currentCityWeight <= getMinCityWeight(dist))) {
+                break;
             }
             for (final Tile to : game.getKingdom().getNeighborTiles(from, false)) {
                 if (distances.containsKey(to) || armies.getMovementCost(to) == ArmyType.FORBIDDEN_MOVEMENT_COST) {
@@ -238,7 +240,7 @@ public final class Computer {
                 }
                 distances.put(to, dist);
                 queue.add(to);
-                if (canSearchAllBuildings || (dist <= ArmyGroup.MAX_ARMY_COUNT && canSearchBuildings)) {
+                if (canSearch) {
                     // Try to find buildings.
                     final Building building = to.getBuilding();
                     if (building != null && !building.isExplored() && (building.isCrypt() || building.isSage())) {
@@ -261,8 +263,7 @@ public final class Computer {
                         return to;
                     }
                     // Try to hide the hero in the city.
-                    if (canHideHero && bestTarget == null && dist <= ArmyGroup.MAX_ARMY_COUNT * 2 &&
-                            to.canLocate(armies) && dac.computeIfAbsent(city, this::getDefendingArmyCount) > 1) {
+                    if (canHide && to.canLocate(armies) && dac.computeIfAbsent(city, this::getDefendingArmyCount) > 1) {
                         bestTarget = to;
                     }
                 } else {
