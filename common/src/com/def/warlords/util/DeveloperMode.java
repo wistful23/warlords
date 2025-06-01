@@ -4,7 +4,7 @@ package com.def.warlords.util;
  * @author wistful23
  * @version 1.23
  */
-public class DeveloperMode {
+public final class DeveloperMode {
 
     private static boolean on;
 
@@ -13,13 +13,8 @@ public class DeveloperMode {
     }
 
     public static void invert() {
-        if (on) {
-            System.out.println("Developer mode: OFF");
-        }
         on = !on;
-        if (on) {
-            System.out.println("Developer mode: ON");
-        }
+        Logger.dev("Developer mode: " + (on ? "ON" : "OFF"));
     }
 
     private DeveloperMode() {

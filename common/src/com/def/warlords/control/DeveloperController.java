@@ -50,7 +50,7 @@ public class DeveloperController {
         // Reduce all delays.
         if (keyCode == KeyEvent.VK_F) {
             delayFactor = delayFactor % MAX_DELAY_FACTOR + 1;
-            Logger.info("Delay factor: " + delayFactor);
+            Logger.dev("Delay factor: " + delayFactor);
             return true;
         }
         final Game game = controller.getGame();
@@ -92,7 +92,7 @@ public class DeveloperController {
                 }
                 DeveloperHelper.locateArmy(empire, tile, army);
             } else {
-                Logger.info("Select tile to locate army");
+                Logger.dev("Select tile to locate army");
             }
         }
         // Produce an army in the nearest city.
@@ -112,13 +112,13 @@ public class DeveloperController {
             if (target != null) {
                 Util.assertTrue(playingMap.moveArmySelection(target, false, null));
             } else {
-                Logger.info("No move is proposed");
+                Logger.dev("No move is proposed");
             }
         }
         // Process the cities by the computer.
         if (keyCode == KeyEvent.VK_C) {
             computer.processCities(game.getCurrentPlayer().getCities(), true);
-            Logger.info("Processed cities");
+            Logger.dev("Processed cities");
         }
         return true;
     }

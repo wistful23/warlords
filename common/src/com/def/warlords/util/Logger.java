@@ -9,13 +9,8 @@ public final class Logger {
     private static boolean verbose;
 
     public static void invertVerbose() {
-        if (verbose) {
-            info("Verbose logging: OFF");
-        }
         verbose = !verbose;
-        if (verbose) {
-            info("Verbose logging: ON");
-        }
+        dev("Verbose logging: " + (verbose ? "ON" : "OFF"));
     }
 
     public static void info(String msg) {
@@ -30,6 +25,10 @@ public final class Logger {
 
     public static void error(String msg) {
         System.out.println("[ERR][" + getLocation() + "] " + msg);
+    }
+
+    public static void dev(String msg) {
+        System.out.println("[DEV][" + getLocation() + "] " + msg);
     }
 
     private static String getLocation() {

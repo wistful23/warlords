@@ -10,28 +10,28 @@ public final class DeveloperHelper {
 
     public static void locateArmy(Empire empire, Tile tile, Army army) {
         if (!empire.registerArmy(army)) {
-            Logger.warn("Could not register army " + army.getName() + " in " + empire.getType());
+            Logger.dev("Could not register army " + army.getName() + " in " + empire.getType());
             return;
         }
         if (!tile.locate(army)) {
-            Logger.warn("Could not locate army " + army.getName() + " to " + tile.getTerrain().getName());
+            Logger.dev("Could not locate army " + army.getName() + " to " + tile.getTerrain().getName());
             empire.unregisterArmy(army);
             return;
         }
-        Logger.info("Located army " + army.getName() + " to " + tile.getTerrain().getName());
+        Logger.dev("Located army " + army.getName() + " to " + tile.getTerrain().getName());
     }
 
     public static void locateArmy(Empire empire, City city, Army army) {
         if (!empire.registerArmy(army)) {
-            Logger.warn("Could not register army " + army.getName() + " in " + empire.getType());
+            Logger.dev("Could not register army " + army.getName() + " in " + empire.getType());
             return;
         }
         if (!city.locate(army)) {
-            Logger.warn("Could not locate army " + army.getName() + " to " + city.getName());
+            Logger.dev("Could not locate army " + army.getName() + " to " + city.getName());
             empire.unregisterArmy(army);
             return;
         }
-        Logger.info("Located army " + army.getName() + " to " + city.getName());
+        Logger.dev("Located army " + army.getName() + " to " + city.getName());
     }
 
     private DeveloperHelper() {
