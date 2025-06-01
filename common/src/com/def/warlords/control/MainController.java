@@ -448,7 +448,7 @@ public class MainController implements FormController, MenuController, GameContr
     public void onComputerModeTurned() {
         showMessage("And so the war continues...");
         showMessage("...without you!");
-        observeToggle.turnOn();
+        // NOTE: W automatically turns on the observation mode for the computer mode.
     }
 
     @Override
