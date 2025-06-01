@@ -39,7 +39,7 @@ public class MenuItem extends Component {
     @Override
     public void paint(Graphics g) {
         final Font font = FontFactory.getInstance().getMonospacedFont();
-        if (selected) {
+        if (isSelected()) {
             g.setColor(Palette.BROWN_LIGHT);
             g.fillRect(x + 1, y, width - 2, height);
             g.setColor(Palette.YELLOW);
@@ -52,15 +52,15 @@ public class MenuItem extends Component {
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (selected) {
+        if (isSelected()) {
+            setSelected(false);
             onSelected();
-            selected = false;
         }
     }
 
     @Override
     public void keyPressed(KeyEvent e) {
-        if (keyCode == e.getKeyCode() && keyModifier == e.getModifiersEx()) {
+        if (e.getKeyCode() == keyCode && e.getModifiersEx() == keyModifier) {
             onSelected();
         }
     }

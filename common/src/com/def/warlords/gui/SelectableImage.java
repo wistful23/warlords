@@ -30,14 +30,14 @@ public class SelectableImage extends Component {
         super.paint(g);
         // Sprite.
         sprite.draw(g, x + 1, y + 2);
-        if (selected) {
+        if (isSelected()) {
             FramePainter.drawReleasedFrame(g, x, y, width, height);
         }
     }
 
     @Override
     public boolean mousePressed(MouseEvent e) {
-        selected = true;
+        setSelected(true);
         if (listener != null) {
             listener.imageClicked(this);
         }

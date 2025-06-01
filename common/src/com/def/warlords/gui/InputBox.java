@@ -122,7 +122,7 @@ public class InputBox extends Component {
             g.setColor(cursorColor);
             font.drawString(g, x + offset + 3, y + 4, cursorChar + "");
         } else {
-            g.setColor(selected ? Palette.WHITE : Palette.BLACK);
+            g.setColor(isSelected() ? Palette.WHITE : Palette.BLACK);
             font.drawString(g, x + 3, y + 4, text);
         }
     }
