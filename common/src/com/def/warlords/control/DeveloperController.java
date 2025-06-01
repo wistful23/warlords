@@ -16,18 +16,24 @@ import java.awt.event.KeyEvent;
  */
 public class DeveloperController {
 
-    private static final int DEVELOPER_KEY_MASK = KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK;
+    private static final int MAX_DELAY_FACTOR = 5;
 
     private static final int BONUS = 1000;
 
     private final MainController controller;
 
+    private int delayFactor = 1;
+
     public DeveloperController(MainController controller) {
         this.controller = controller;
     }
 
+    public int getAdjustedDelay(int delay) {
+        return delay / delayFactor;
+    }
+
     public boolean processKeyEvent(KeyEvent e) {
-        if (e.getModifiersEx() != DEVELOPER_KEY_MASK) {
+        if (e.getModifiersEx() != (KeyEvent.SHIFT_DOWN_MASK | KeyEvent.CTRL_DOWN_MASK)) {
             return false;
         }
         final int keyCode = e.getKeyCode();
@@ -41,12 +47,18 @@ public class DeveloperController {
             Logger.invertVerbose();
             return true;
         }
+        // Reduce all delays.
+        if (keyCode == KeyEvent.VK_F) {
+            delayFactor = delayFactor % MAX_DELAY_FACTOR + 1;
+            Logger.info("Delay factor: " + delayFactor);
+            return true;
+        }
         final Game game = controller.getGame();
         if (game == null || game.isComputerTurn()) {
             return true;
         }
         final PlayingMap playingMap = controller.getPlayingMap();
-        // Rest army.
+        // Make the selected armies rest.
         if (keyCode == KeyEvent.VK_R) {
             final ArmyGroup selectedGroup = playingMap.getArmySelection().getSelectedGroup();
             if (selectedGroup != null) {
@@ -55,7 +67,7 @@ public class DeveloperController {
         }
         final Kingdom kingdom = game.getKingdom();
         final Empire empire = game.getCurrentPlayer().getEmpire();
-        // Whole kingdom.
+        // Capture the whole kingdom.
         if (keyCode == KeyEvent.VK_A) {
             for (final City city : kingdom.getCities()) {
                 if (city.getEmpire() != null) {
@@ -67,7 +79,7 @@ public class DeveloperController {
         if (keyCode == KeyEvent.VK_G) {
             empire.addGold(BONUS);
         }
-        // Generate a hero or ally.
+        // Produce a hero or ally in the selected tile.
         if ((keyCode == KeyEvent.VK_H) || (keyCode >= KeyEvent.VK_1 && keyCode <= KeyEvent.VK_5)) {
             final Tile tile = playingMap.getSelectedTile();
             if (tile != null) {
@@ -83,7 +95,7 @@ public class DeveloperController {
                 Logger.info("Select tile to locate army");
             }
         }
-        // Produce army.
+        // Produce an army in the nearest city.
         if (keyCode >= KeyEvent.VK_F5 && keyCode <= KeyEvent.VK_F8) {
             final int factoryIndex = keyCode - KeyEvent.VK_F5;
             final City city = GameHelper.getNearest(empire.getCities(),
@@ -94,7 +106,7 @@ public class DeveloperController {
             }
         }
         final Computer computer = new Computer(game);
-        // Move the selection by the computer.
+        // Move the selected armies by the computer.
         if (keyCode == KeyEvent.VK_M) {
             final Tile target = computer.findTarget(playingMap.getArmySelection(), true);
             if (target != null) {

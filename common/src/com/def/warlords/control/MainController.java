@@ -110,7 +110,7 @@ public class MainController implements FormController, MenuController, GameContr
 
     @Override
     public void invokeLater(Runnable action, int delay) {
-        platform.invokeLater(action, delay);
+        platform.invokeLater(action, developerController.getAdjustedDelay(delay));
     }
 
     public void enableActiveContainer() {
