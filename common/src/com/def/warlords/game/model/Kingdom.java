@@ -109,8 +109,17 @@ public class Kingdom implements Record {
         return null;
     }
 
-    public Tile getNeighborTile(Tile tile, int index, int direction) {
-        return getTile(tile.getPosX() + direction * dx[index], tile.getPosY() + direction * dy[index]);
+    public int getDirectionIndex(Tile from, Tile to) {
+        for (int index = 0; index < NEIGHBOR_TILE_COUNT; ++index) {
+            if (dx[index] == to.getPosX() - from.getPosX() && dy[index] == to.getPosY() - from.getPosY()) {
+                return index;
+            }
+        }
+        return -1;
+    }
+
+    public Tile getNeighborTile(Tile tile, int index) {
+        return getTile(tile.getPosX() + dx[index], tile.getPosY() + dy[index]);
     }
 
     public List<Tile> getNeighborTiles(Tile tile, boolean includeSelf) {
@@ -119,7 +128,7 @@ public class Kingdom implements Record {
             neighborTiles.add(tile);
         }
         for (int index = 0; index < NEIGHBOR_TILE_COUNT; ++index) {
-            final Tile neighborTile = getNeighborTile(tile, index, 1);
+            final Tile neighborTile = getNeighborTile(tile, index);
             if (neighborTile != null) {
                 neighborTiles.add(neighborTile);
             }

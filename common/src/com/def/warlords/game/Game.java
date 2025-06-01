@@ -404,7 +404,7 @@ public class Game implements Record {
         final Deque<Tile> path = new ArrayDeque<>();
         while (target != source) {
             path.addFirst(target);
-            target = kingdom.getNeighborTile(target, values.get(target) & ((1 << INDEX_SHIFT) - 1), -1);
+            target = kingdom.getNeighborTile(target, values.get(target) & ((1 << INDEX_SHIFT) - 1));
         }
         return path;
     }
@@ -490,9 +490,7 @@ public class Game implements Record {
         queue.add(source);
         while (!queue.isEmpty() && queue.peek() != target) {
             final Tile from = queue.poll();
-            final List<Tile> neighborTiles = kingdom.getNeighborTiles(from, false);
-            for (int index = 0; index < neighborTiles.size(); ++index) {
-                final Tile to = neighborTiles.get(index);
+            for (final Tile to : kingdom.getNeighborTiles(from, false)) {
                 int movementCost = armies.getMovementCost(to);
                 if (movementCost == ArmyType.FORBIDDEN_MOVEMENT_COST) {
                     continue;
@@ -514,6 +512,8 @@ public class Game implements Record {
                     }
                     movementCost = UNWANTED_MOVEMENT_COST;
                 }
+                final int index = kingdom.getDirectionIndex(to, from);
+                Util.assertTrue(index >= 0 && index < (1 << INDEX_SHIFT));
                 final int value = (((values.get(from) >> INDEX_SHIFT) + movementCost) << INDEX_SHIFT) + index;
                 if (value < values.getOrDefault(to, Integer.MAX_VALUE)) {
                     values.put(to, value);
