@@ -1,6 +1,6 @@
 package com.def.warlords.control;
 
-import com.def.warlords.sound.Player;
+import com.def.warlords.sound.Sound;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -16,7 +16,7 @@ public interface Platform {
 
     InputStream getResourceAsStream(String fileName) throws IOException;
     BufferedImage getBufferedImage(String fileName) throws IOException;
-    Player getAudioPlayer(String fileName, Runnable listener) throws IOException;
+    Sound getSound(String fileName, Runnable listener) throws IOException;
 
     void startSecondaryLoop();
     void stopSecondaryLoop();

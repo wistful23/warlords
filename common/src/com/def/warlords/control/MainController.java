@@ -14,7 +14,7 @@ import com.def.warlords.graphics.BitmapFactory;
 import com.def.warlords.graphics.BitmapInfo;
 import com.def.warlords.graphics.Cursor;
 import com.def.warlords.gui.Container;
-import com.def.warlords.sound.SoundFactory;
+import com.def.warlords.sound.Sound;
 import com.def.warlords.sound.SoundInfo;
 import com.def.warlords.util.Logger;
 import com.def.warlords.util.Timer;
@@ -23,6 +23,7 @@ import com.def.warlords.util.Toggle;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import java.util.List;
 
 import static com.def.warlords.control.common.Dimensions.*;
@@ -37,14 +38,14 @@ public class MainController implements FormController, MenuController, GameContr
 
     private final DeveloperController developerController = new DeveloperController(this);
 
-    private Bitmap mainBitmap = BitmapFactory.getInstance().fetchBitmap(BitmapInfo.MAIN);
-
+    private Bitmap mainBitmap;
     private Container activeContainer;
     private Form activeForm;
 
     private final Container mainContainer = new Container(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     private final Toggle observeToggle = new Toggle(true);
+    private final Toggle soundToggle = new Toggle(true);
 
     // A - Playing Map
     // B - Strategic Map
@@ -69,6 +70,7 @@ public class MainController implements FormController, MenuController, GameContr
 
     public MainController(Platform platform) {
         this.platform = platform;
+        BitmapFactory.createInstance(platform);
         mainContainer.add(playingMap);
         mainContainer.add(strategicMap);
         mainContainer.add(infoScreen);
@@ -79,6 +81,7 @@ public class MainController implements FormController, MenuController, GameContr
     }
 
     public void start() {
+        mainBitmap = BitmapFactory.getInstance().fetchBitmap(BitmapInfo.MAIN);
         new SoundForm(this, SoundInfo.HORN).activate();
         mainBitmap = BitmapFactory.getInstance().transformMainBitmap();
         activeContainer = new SetupContainer(this);
@@ -101,6 +104,20 @@ public class MainController implements FormController, MenuController, GameContr
         }
         activeForm = null;
         platform.stopSecondaryLoop();
+    }
+
+    @Override
+    public Sound getSound(SoundInfo soundInfo, Runnable listener) {
+        if (soundToggle.isOff()) {
+            return null;
+        }
+        try {
+            return platform.getSound("sound/" + soundInfo.getFileName(), listener);
+        } catch (IOException e) {
+            Logger.error("Cannot get sound for " + soundInfo);
+            e.printStackTrace();
+        }
+        return null;
     }
 
     @Override
@@ -242,7 +259,7 @@ public class MainController implements FormController, MenuController, GameContr
 
     @Override
     public Toggle getSoundToggle() {
-        return SoundFactory.getInstance().getToggle();
+        return soundToggle;
     }
 
     @Override
@@ -527,7 +544,9 @@ public class MainController implements FormController, MenuController, GameContr
     // Main paint.
     public void paint(Graphics g) {
         // Background.
-        mainBitmap.drawSprite(g, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0);
+        if (mainBitmap != null) {
+            mainBitmap.drawSprite(g, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0, 0);
+        }
         if (activeContainer != null) {
             activeContainer.paint(g);
         }

@@ -2,6 +2,7 @@ package com.def.warlords.android
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Rect
 import android.view.MotionEvent
@@ -10,9 +11,7 @@ import android.view.ViewConfiguration
 import com.def.warlords.control.MainController
 import com.def.warlords.control.Platform
 import com.def.warlords.control.common.Dimensions
-import com.def.warlords.graphics.BitmapFactory
-import com.def.warlords.sound.Player
-import com.def.warlords.sound.SoundFactory
+import com.def.warlords.sound.Sound
 import com.def.warlords.util.Logger
 import java.awt.Graphics
 import java.awt.event.MouseEvent
@@ -20,18 +19,12 @@ import java.awt.image.BufferedImage
 import java.io.InputStream
 
 class MainView(private val context: Context) : View(context), Platform {
-    private val controller: MainController
     private val thread = LooperThread()
+    private val controller: MainController = MainController(this)
 
     private val dstRect = Rect()
     private var backBuffer = Graphics(Dimensions.SCREEN_WIDTH, Dimensions.SCREEN_HEIGHT)
     private var frontBuffer = Graphics(Dimensions.SCREEN_WIDTH, Dimensions.SCREEN_HEIGHT)
-
-    init {
-        BitmapFactory.createInstance(this)
-        SoundFactory.createInstance(this)
-        this.controller = MainController(this)
-    }
 
     fun start() {
         thread.start {
@@ -57,13 +50,13 @@ class MainView(private val context: Context) : View(context), Platform {
 
     override fun getBufferedImage(fileName: String): BufferedImage {
         context.assets.open(fileName).use { stream ->
-            return BufferedImage(android.graphics.BitmapFactory.decodeStream(stream))
+            return BufferedImage(BitmapFactory.decodeStream(stream))
         }
     }
 
-    override fun getAudioPlayer(fileName: String, listener: Runnable): Player {
+    override fun getSound(fileName: String, listener: Runnable): Sound {
         context.assets.openFd(fileName).use { fd ->
-            return AudioPlayer(fd, listener, this::repaint)
+            return SimpleSound(fd, listener, this::repaint)
         }
     }
 

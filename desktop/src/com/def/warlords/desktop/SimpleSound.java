@@ -1,6 +1,6 @@
 package com.def.warlords.desktop;
 
-import com.def.warlords.sound.Player;
+import com.def.warlords.sound.Sound;
 
 import javax.sound.sampled.*;
 import java.awt.EventQueue;
@@ -8,7 +8,11 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class AudioPlayer implements Player {
+/**
+ * @author wistful23
+ * @version 1.23
+ */
+public class SimpleSound implements Sound {
 
     private Clip clip;
 

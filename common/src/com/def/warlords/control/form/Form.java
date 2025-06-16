@@ -1,7 +1,6 @@
 package com.def.warlords.control.form;
 
 import com.def.warlords.gui.Container;
-import com.def.warlords.util.Timer;
 
 import static com.def.warlords.control.common.Dimensions.*;
 
@@ -11,7 +10,7 @@ import static com.def.warlords.control.common.Dimensions.*;
  */
 public class Form extends Container {
 
-    private final FormController controller;
+    final FormController controller;
 
     public Form(FormController controller) {
         super(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
@@ -25,10 +24,6 @@ public class Form extends Container {
 
     public final void deactivate() {
         controller.deactivateForm(this);
-    }
-
-    Timer createTimer(Runnable listener) {
-        return controller.createTimer(listener);
     }
 
     void invokeLater(Runnable action, int delay) {

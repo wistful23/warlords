@@ -21,7 +21,7 @@ public class Main extends JFrame {
         setContentPane(mainComponent);
         getContentPane().setPreferredSize(mainComponent.getSize());
         pack();
-        setVisible(true);
         EventQueue.invokeLater(mainComponent::start);
+        setVisible(true);
     }
 }

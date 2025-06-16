@@ -2,9 +2,7 @@ package com.def.warlords.desktop;
 
 import com.def.warlords.control.MainController;
 import com.def.warlords.control.Platform;
-import com.def.warlords.graphics.BitmapFactory;
-import com.def.warlords.sound.Player;
-import com.def.warlords.sound.SoundFactory;
+import com.def.warlords.sound.Sound;
 
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
@@ -24,17 +22,17 @@ import static com.def.warlords.control.common.Dimensions.*;
  */
 public class MainComponent extends JComponent implements Platform {
 
-    private final MainController controller;
+    private final MainController controller = new MainController(this);
 
     private final Mouse mouse = new Mouse();
 
     private SecondaryLoop secondaryLoop;
 
-    public MainComponent() {
+    static {
         ImageIO.setUseCache(false);
-        BitmapFactory.createInstance(this);
-        SoundFactory.createInstance(this);
-        this.controller = new MainController(this);
+    }
+
+    public MainComponent() {
         setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
         setFocusable(true);
         addKeyListener(new Keyboard());
@@ -59,10 +57,10 @@ public class MainComponent extends JComponent implements Platform {
     }
 
     @Override
-    public Player getAudioPlayer(String fileName, Runnable listener) throws IOException {
-        final AudioPlayer player = new AudioPlayer();
-        player.init(getResourceAsStream(fileName), listener, this::repaint);
-        return player;
+    public Sound getSound(String fileName, Runnable listener) throws IOException {
+        final SimpleSound sound = new SimpleSound();
+        sound.init(getResourceAsStream(fileName), listener, this::repaint);
+        return sound;
     }
 
     @Override

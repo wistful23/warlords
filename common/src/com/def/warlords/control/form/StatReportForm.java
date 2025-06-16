@@ -44,7 +44,7 @@ public class StatReportForm extends EmptyForm {
         add(new Label(550, 356, type.getName()));
     }
 
-    public void paint(java.awt.Graphics g) {
+    public void paint(Graphics g) {
         super.paint(g);
         // Baseline.
         g.setColor(Palette.BLACK);

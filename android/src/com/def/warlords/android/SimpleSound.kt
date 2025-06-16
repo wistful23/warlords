@@ -2,10 +2,10 @@ package com.def.warlords.android
 
 import android.content.res.AssetFileDescriptor
 import android.media.MediaPlayer
-import com.def.warlords.sound.Player
+import com.def.warlords.sound.Sound
 
-// The basic audio player that plays an audio track once and cannot be reused.
-class AudioPlayer(fd: AssetFileDescriptor, listener: Runnable, repaint: Runnable) : Player {
+// The basic sound class whose instance plays an audio track once and cannot be reused.
+class SimpleSound(fd: AssetFileDescriptor, listener: Runnable, repaint: Runnable) : Sound {
     private var player = MediaPlayer()
 
     init {

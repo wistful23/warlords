@@ -1,8 +1,7 @@
 package com.def.warlords.control.form;
 
 import com.def.warlords.graphics.Cursor;
-import com.def.warlords.sound.Player;
-import com.def.warlords.sound.SoundFactory;
+import com.def.warlords.sound.Sound;
 import com.def.warlords.sound.SoundInfo;
 
 import java.awt.event.KeyEvent;
@@ -18,7 +17,7 @@ public class SoundForm extends Form {
 
     private final SoundInfo soundInfo;
 
-    private Player audioPlayer;
+    private Sound sound;
 
     public SoundForm(FormController controller, SoundInfo soundInfo) {
         super(controller);
@@ -27,9 +26,9 @@ public class SoundForm extends Form {
 
     @Override
     void init() {
-        audioPlayer = SoundFactory.getInstance().getAudioPlayer(soundInfo, this::deactivate);
-        if (audioPlayer != null) {
-            audioPlayer.start();
+        sound = controller.getSound(soundInfo, this::deactivate);
+        if (sound != null) {
+            sound.start();
         } else {
             invokeLater(this::deactivate, DELAY_SILENCE);
         }
@@ -52,8 +51,8 @@ public class SoundForm extends Form {
     }
 
     private void stop() {
-        if (audioPlayer != null) {
-            audioPlayer.stop();
+        if (sound != null) {
+            sound.stop();
         }
         deactivate();
     }
