@@ -1,5 +1,7 @@
 # Warlords Authentic Remake
 
+![screenshot](doc/screenshot.png)
+
 ## About Game
 
 *Warlords* is a turn-based strategy game where eight players, human or computer-controlled, compete to conquer the land of *Illuria*. Players manage cities, armies and heroes to expand their territory and eliminate opponents.
@@ -28,7 +30,10 @@ SDK requirements: Java 21.
 
 Use the Apache Ant script [build.xml](build.xml) to build the desktop application.
 
-The script builds the executable JAR file `warlords.jar` which can be run with the command `java -jar warlords.jar`.
+The script builds the executable JAR file `warlords.jar` which can be run with the following command:
+```
+java -jar warlords.jar
+```
 
 ### Android
 
