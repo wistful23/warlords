@@ -1,7 +1,8 @@
 package com.def.warlords.desktop;
 
 import com.def.warlords.control.MainController;
-import com.def.warlords.control.Platform;
+import com.def.warlords.platform.Platform;
+import com.def.warlords.platform.PlatformHolder;
 import com.def.warlords.sound.Sound;
 
 import javax.imageio.ImageIO;
@@ -22,7 +23,7 @@ import static com.def.warlords.control.common.Dimensions.*;
  */
 public class MainComponent extends JComponent implements Platform {
 
-    private final MainController controller = new MainController(this);
+    private final MainController controller = new MainController();
 
     private final Mouse mouse = new Mouse();
 
@@ -39,6 +40,7 @@ public class MainComponent extends JComponent implements Platform {
     }
 
     public void start() {
+        PlatformHolder.setPlatform(this);
         controller.start();
     }
 

@@ -12,6 +12,11 @@ internal class LooperThread : Thread() {
         start()
     }
 
+    fun quit() {
+        handler!!.looper.quit()
+        join()
+    }
+
     fun startNestedLoop() {
         try {
             Looper.loop()

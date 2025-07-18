@@ -1,4 +1,4 @@
-package com.def.warlords.control;
+package com.def.warlords.platform;
 
 import com.def.warlords.sound.Sound;
 

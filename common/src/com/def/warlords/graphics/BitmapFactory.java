@@ -1,6 +1,6 @@
 package com.def.warlords.graphics;
 
-import com.def.warlords.control.Platform;
+import com.def.warlords.platform.PlatformHolder;
 import com.def.warlords.util.Logger;
 
 import java.awt.Color;
@@ -15,29 +15,16 @@ import java.util.Map;
  */
 public final class BitmapFactory {
 
-    private static BitmapFactory instance;
-
-    public static void createInstance(Platform platform) {
-        if (instance != null) {
-            throw new IllegalStateException("Bitmap factory is already created");
-        }
-        instance = new BitmapFactory(platform);
-    }
+    private static final BitmapFactory instance = new BitmapFactory();
 
     public static BitmapFactory getInstance() {
-        if (instance == null) {
-            throw new IllegalStateException("Bitmap factory is not created");
-        }
         return instance;
     }
-
-    private final Platform platform;
 
     private final Bitmap[] bitmaps = new Bitmap[BitmapInfo.COUNT];
     private final Map<Long, Bitmap> transformedBitmaps = new HashMap<>();
 
-    private BitmapFactory(Platform platform) {
-        this.platform = platform;
+    private BitmapFactory() {
     }
 
     public Bitmap fetchBitmap(BitmapInfo bitmapInfo) {
@@ -46,7 +33,7 @@ public final class BitmapFactory {
         if (bitmap == null) {
             BufferedImage image = null;
             try {
-                image = platform.getBufferedImage("img/" + bitmapInfo.getFileName());
+                image = PlatformHolder.getPlatform().getBufferedImage("img/" + bitmapInfo.getFileName());
             } catch (IOException e) {
                 Logger.error("Cannot get buffered image for " + bitmapInfo);
                 e.printStackTrace();

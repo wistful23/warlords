@@ -9,8 +9,9 @@ import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
 import com.def.warlords.control.MainController
-import com.def.warlords.control.Platform
 import com.def.warlords.control.common.Dimensions
+import com.def.warlords.platform.Platform
+import com.def.warlords.platform.PlatformHolder
 import com.def.warlords.sound.Sound
 import com.def.warlords.util.Logger
 import java.awt.Graphics
@@ -20,13 +21,14 @@ import java.io.InputStream
 
 class MainView(private val context: Context) : View(context), Platform {
     private val thread = LooperThread()
-    private val controller: MainController = MainController(this)
+    private val controller = MainController()
 
     private val dstRect = Rect()
     private var backBuffer = Graphics(Dimensions.SCREEN_WIDTH, Dimensions.SCREEN_HEIGHT)
     private var frontBuffer = Graphics(Dimensions.SCREEN_WIDTH, Dimensions.SCREEN_HEIGHT)
 
     fun start() {
+        PlatformHolder.setPlatform(this)
         thread.start {
             setOnTouchListener(Mouse())
             repaint()
@@ -34,14 +36,9 @@ class MainView(private val context: Context) : View(context), Platform {
         }
     }
 
-    fun repaint() {
-        thread.post {
-            controller.paint(backBuffer)
-            // Swap the buffers.
-            frontBuffer = backBuffer.also { backBuffer = frontBuffer }
-            // Enqueue `View.onDraw()`.
-            postInvalidate()
-        }
+    fun quit() {
+        thread.quit()
+        PlatformHolder.setPlatform(null)
     }
 
     override fun getResourceAsStream(fileName: String): InputStream {
@@ -81,6 +78,16 @@ class MainView(private val context: Context) : View(context), Platform {
         dstRect.right = metrics.widthPixels
         dstRect.bottom = metrics.heightPixels
         canvas.drawBitmap(frontBuffer.bitmap, null, dstRect, null)
+    }
+
+    private fun repaint() {
+        thread.post {
+            controller.paint(backBuffer)
+            // Swap the buffers.
+            frontBuffer = backBuffer.also { backBuffer = frontBuffer }
+            // Enqueue `View.onDraw()`.
+            postInvalidate()
+        }
     }
 
     private inner class Mouse : OnTouchListener {

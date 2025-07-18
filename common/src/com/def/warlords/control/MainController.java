@@ -14,6 +14,7 @@ import com.def.warlords.graphics.BitmapFactory;
 import com.def.warlords.graphics.BitmapInfo;
 import com.def.warlords.graphics.Cursor;
 import com.def.warlords.gui.Container;
+import com.def.warlords.platform.PlatformHolder;
 import com.def.warlords.sound.Sound;
 import com.def.warlords.sound.SoundInfo;
 import com.def.warlords.util.Logger;
@@ -33,8 +34,6 @@ import static com.def.warlords.control.common.Dimensions.*;
  * @version 1.23
  */
 public class MainController implements FormController, MenuController, GameController {
-
-    private final Platform platform;
 
     private final DeveloperController developerController = new DeveloperController(this);
 
@@ -68,9 +67,7 @@ public class MainController implements FormController, MenuController, GameContr
 
     private int currentRecordIndex = -1;
 
-    public MainController(Platform platform) {
-        this.platform = platform;
-        BitmapFactory.createInstance(platform);
+    public MainController() {
         mainContainer.add(playingMap);
         mainContainer.add(strategicMap);
         mainContainer.add(infoScreen);
@@ -94,7 +91,7 @@ public class MainController implements FormController, MenuController, GameContr
             throw new IllegalStateException("Form " + activeForm + " is already active");
         }
         activeForm = form;
-        platform.startSecondaryLoop();
+        PlatformHolder.getPlatform().startSecondaryLoop();
     }
 
     @Override
@@ -103,7 +100,7 @@ public class MainController implements FormController, MenuController, GameContr
             return;
         }
         activeForm = null;
-        platform.stopSecondaryLoop();
+        PlatformHolder.getPlatform().stopSecondaryLoop();
     }
 
     @Override
@@ -112,7 +109,7 @@ public class MainController implements FormController, MenuController, GameContr
             return null;
         }
         try {
-            return platform.getSound("sound/" + soundInfo.getFileName(), listener);
+            return PlatformHolder.getPlatform().getSound("sound/" + soundInfo.getFileName(), listener);
         } catch (IOException e) {
             Logger.error("Cannot get sound for " + soundInfo);
             e.printStackTrace();
@@ -122,12 +119,12 @@ public class MainController implements FormController, MenuController, GameContr
 
     @Override
     public Timer createTimer(Runnable listener) {
-        return new Timer(() -> platform.invokeLater(listener, 0));
+        return new Timer(() -> PlatformHolder.getPlatform().invokeLater(listener, 0));
     }
 
     @Override
     public void invokeLater(Runnable action, int delay) {
-        platform.invokeLater(action, developerController.getAdjustedDelay(delay));
+        PlatformHolder.getPlatform().invokeLater(action, developerController.getAdjustedDelay(delay));
     }
 
     public void enableActiveContainer() {
@@ -212,7 +209,7 @@ public class MainController implements FormController, MenuController, GameContr
     public void startGame(List<PlayerParams> playerParams) {
         new SoundForm(this, SoundInfo.DRUMROLL).activate();
         final Kingdom kingdom = new Kingdom();
-        if (!kingdom.init(platform)) {
+        if (!kingdom.init()) {
             Logger.error("Failed to initialize Kingdom");
             return;
         }

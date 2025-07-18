@@ -7,8 +7,8 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 
-
 class MainActivity : ComponentActivity() {
+    private var mainView: MainView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -18,8 +18,13 @@ class MainActivity : ComponentActivity() {
         insetsController.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         // Create the main view.
-        val contentView = MainView(this)
-        setContentView(contentView)
-        contentView.start()
+        mainView = MainView(this)
+        setContentView(mainView)
+        mainView!!.start()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        mainView!!.quit()
     }
 }
