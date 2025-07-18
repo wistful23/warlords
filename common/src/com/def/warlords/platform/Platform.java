@@ -14,6 +14,8 @@ import java.io.InputStream;
  */
 public interface Platform {
 
+    String getAppDirPath();
+
     InputStream getResourceAsStream(String fileName) throws IOException;
     BufferedImage getBufferedImage(String fileName) throws IOException;
     Sound getSound(String fileName, Runnable listener) throws IOException;

@@ -45,6 +45,11 @@ public class MainComponent extends JComponent implements Platform {
     }
 
     @Override
+    public String getAppDirPath() {
+        return ".";
+    }
+
+    @Override
     public InputStream getResourceAsStream(String fileName) throws IOException {
         final InputStream in = getClass().getResourceAsStream("/" + fileName);
         if (in == null) {

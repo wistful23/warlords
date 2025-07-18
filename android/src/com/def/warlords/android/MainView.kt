@@ -41,6 +41,10 @@ class MainView(private val context: Context) : View(context), Platform {
         PlatformHolder.setPlatform(null)
     }
 
+    override fun getAppDirPath(): String {
+        return context.filesDir.path
+    }
+
     override fun getResourceAsStream(fileName: String): InputStream {
         return context.assets.open(fileName)
     }
