@@ -39,7 +39,7 @@ public class RecordForm extends ResultForm<Integer> {
             if (currentRecord != null) {
                 currentRecord.cancelEditing();
             }
-            setResult(-1);
+            setResult(null);
         }));
         for (int index = 0; index < initialHeadlines.length; ++index) {
             final int x = index / 4;

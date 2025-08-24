@@ -60,7 +60,7 @@ public class HumanController implements PlayerController {
         strategicMap.setMode(StrategicMap.Mode.HERO_OFFER);
         strategicMap.setSourceCity(city);
         String name = null;
-        if (new HeroOfferResultForm(controller, city, cost).getResult()) {
+        if (Util.isTrue(new HeroOfferResultForm(controller, city, cost).getResult())) {
             name = new HeroNameResultForm(controller, initialName).getResult();
         }
         strategicMap.setMode(StrategicMap.Mode.CITIES);
@@ -85,7 +85,7 @@ public class HumanController implements PlayerController {
         infoScreen.setVisible(false);
         final ReportResult result = new DeliveryReportResultForm(controller, targetCity).getResult();
         infoScreen.setVisible(true);
-        endDeliveryReport = result == ReportResult.END_REPORT;
+        endDeliveryReport = result == null || result == ReportResult.END_REPORT;
         strategicMap.setMode(StrategicMap.Mode.CITIES);
     }
 
@@ -101,9 +101,9 @@ public class HumanController implements PlayerController {
         infoScreen.setVisible(false);
         final ReportResult result = new ProductionReportResultForm(controller, city).getResult();
         infoScreen.setVisible(true);
-        endProductionReport = result == ReportResult.END_REPORT;
+        endProductionReport = result == null || result == ReportResult.END_REPORT;
         strategicMap.setMode(StrategicMap.Mode.CITIES);
-        return result != ReportResult.NO;
+        return result == ReportResult.YES || result == ReportResult.END_REPORT;
     }
 
     @Override
@@ -141,7 +141,7 @@ public class HumanController implements PlayerController {
 
     @Override
     public boolean isImproveCityDefenceApproved(City city) {
-        return new ImproveDefenceResultForm(controller, city).getResult();
+        return Util.isTrue(new ImproveDefenceResultForm(controller, city).getResult());
     }
 
     @Override
@@ -162,7 +162,7 @@ public class HumanController implements PlayerController {
 
     @Override
     public boolean isBuildTowerApproved() {
-        return new BuildTowerResultForm(controller, controller.getGame().getCurrentPlayer()).getResult();
+        return Util.isTrue(new BuildTowerResultForm(controller, controller.getGame().getCurrentPlayer()).getResult());
     }
 
     @Override
@@ -187,7 +187,7 @@ public class HumanController implements PlayerController {
             showMessage("You can only raze cities and towers");
             return false;
         }
-        return new RazeResultForm(controller).getResult();
+        return Util.isTrue(new RazeResultForm(controller).getResult());
     }
 
     @Override
@@ -277,7 +277,7 @@ public class HumanController implements PlayerController {
         }
         // NOTE: W doesn't display Info Screen for first search.
         final SageResult result = new SageResultForm(controller).getResult();
-        if (result == SageResult.CANCEL) {
+        if (result == null || result == SageResult.CANCEL) {
             return false;
         }
         final Kingdom kingdom = controller.getGame().getKingdom();
@@ -391,7 +391,7 @@ public class HumanController implements PlayerController {
 
     public boolean onAltarFound() {
         // NOTE: W hides Info Screen.
-        return new AltarResultForm(controller).getResult();
+        return Util.isTrue(new AltarResultForm(controller).getResult());
     }
 
     public void onAltarResult(Hero hero, boolean ignored) {
@@ -404,7 +404,7 @@ public class HumanController implements PlayerController {
 
     public boolean onThroneFound() {
         // NOTE: W hides Info Screen.
-        return new ThroneResultForm(controller).getResult();
+        return Util.isTrue(new ThroneResultForm(controller).getResult());
     }
 
     public void onThroneResult(Hero hero, boolean downgraded) {

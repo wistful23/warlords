@@ -18,12 +18,18 @@ public class Form extends Container {
     }
 
     public final void activate() {
-        reset();
         controller.activateForm(this);
     }
 
     public final void deactivate() {
         controller.deactivateForm(this);
+    }
+
+    public void start() {
+        reset();
+    }
+
+    public void stop() {
     }
 
     void invokeLater(Runnable action, int delay) {

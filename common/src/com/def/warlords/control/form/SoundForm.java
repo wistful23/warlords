@@ -4,14 +4,13 @@ import com.def.warlords.graphics.Cursor;
 import com.def.warlords.sound.Sound;
 import com.def.warlords.sound.SoundInfo;
 
-import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 
 /**
  * @author wistful23
  * @version 1.23
  */
-public class SoundForm extends Form {
+public class SoundForm extends EmptyForm {
 
     private static final int DELAY_SILENCE = 1000;
 
@@ -25,7 +24,10 @@ public class SoundForm extends Form {
     }
 
     @Override
-    void init() {
+    public void start() {
+        if (sound != null) {
+            throw new IllegalStateException("Sound is already started");
+        }
         sound = controller.getSound(soundInfo, this::deactivate);
         if (sound != null) {
             sound.start();
@@ -35,25 +37,14 @@ public class SoundForm extends Form {
     }
 
     @Override
-    public Cursor getCursor(MouseEvent e) {
-        return Cursor.EMPTY;
-    }
-
-    @Override
-    public boolean mousePressed(MouseEvent e) {
-        stop();
-        return false;
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        stop();
-    }
-
-    private void stop() {
+    public void stop() {
         if (sound != null) {
             sound.stop();
         }
-        deactivate();
+    }
+
+    @Override
+    public Cursor getCursor(MouseEvent e) {
+        return Cursor.EMPTY;
     }
 }

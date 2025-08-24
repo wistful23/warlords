@@ -20,6 +20,7 @@ import com.def.warlords.sound.SoundInfo;
 import com.def.warlords.util.Logger;
 import com.def.warlords.util.Timer;
 import com.def.warlords.util.Toggle;
+import com.def.warlords.util.Util;
 
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
@@ -87,20 +88,27 @@ public class MainController implements FormController, MenuController, GameContr
     // Form controller.
     @Override
     public void activateForm(Form form) {
+        if (form == null) {
+            throw new IllegalArgumentException("Form is null");
+        }
         if (activeForm != null) {
             throw new IllegalStateException("Form " + activeForm + " is already active");
         }
         activeForm = form;
+        activeForm.start();
         PlatformHolder.getPlatform().startSecondaryLoop();
+        activeForm.stop();
+        activeForm = null;
     }
 
     @Override
     public void deactivateForm(Form form) {
-        if (activeForm != form) {
-            return;
+        if (form == null) {
+            throw new IllegalArgumentException("Form is null");
         }
-        activeForm = null;
-        PlatformHolder.getPlatform().stopSecondaryLoop();
+        if (form == activeForm) {
+            PlatformHolder.getPlatform().stopSecondaryLoop();
+        }
     }
 
     @Override
@@ -263,8 +271,8 @@ public class MainController implements FormController, MenuController, GameContr
     public void saveGame() {
         final RecordForm recordsForm = new RecordForm(this, RecordType.SAVE,
                 RecordHelper.loadRecordHeadlines(), currentRecordIndex);
-        final int index = recordsForm.getResult();
-        if (index >= 0 && RecordHelper.save(index, recordsForm.getCurrentHeadline(),
+        final Integer index = recordsForm.getResult();
+        if (index != null && RecordHelper.save(index, recordsForm.getCurrentHeadline(),
                 playingMap.getPosX(), playingMap.getPosY(), game)) {
             currentRecordIndex = index;
         }
@@ -272,9 +280,9 @@ public class MainController implements FormController, MenuController, GameContr
 
     @Override
     public void loadGame() {
-        final int index = new RecordForm(this, RecordType.LOAD,
+        final Integer index = new RecordForm(this, RecordType.LOAD,
                 RecordHelper.loadRecordHeadlines(), currentRecordIndex).getResult();
-        if (index < 0) {
+        if (index == null) {
             return;
         }
         final RecordData recordData = RecordHelper.load(index);
@@ -318,7 +326,7 @@ public class MainController implements FormController, MenuController, GameContr
         if (armies.isHeroList()) {
             showMessage("You cannot disband heroes!");
         } else {
-            if (new DisbandResultForm(this).getResult()) {
+            if (Util.isTrue(new DisbandResultForm(this).getResult())) {
                 armies.disband();
             }
         }
@@ -506,7 +514,7 @@ public class MainController implements FormController, MenuController, GameContr
         showMessage("Your seneschal reports strangers at the gate!");
         showMessage("Crawling towards you they humbly present a scroll");
         // NOTE: W hides Info Screen.
-        if (new SurrenderResultForm(this).getResult()) {
+        if (Util.isTrue(new SurrenderResultForm(this).getResult())) {
             surrenderMode = null;
             showMessage("Under your enlightened rule ...");
             showMessage("Illuria has entered a new golden age ...");

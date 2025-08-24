@@ -14,6 +14,7 @@ import com.def.warlords.platform.Platform
 import com.def.warlords.platform.PlatformHolder
 import com.def.warlords.sound.Sound
 import com.def.warlords.util.Logger
+import com.def.warlords.util.Timer
 import java.awt.Graphics
 import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
@@ -38,6 +39,7 @@ class MainView(private val context: Context) : View(context), Platform {
 
     fun quit() {
         thread.quit()
+        Timer.release()
         PlatformHolder.setPlatform(null)
     }
 

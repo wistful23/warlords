@@ -16,6 +16,10 @@ public class Timer {
         this.listener = listener;
     }
 
+    public static void release() {
+        timer.cancel();
+    }
+
     public void start(int delay) {
         stop();
         timerTask = new java.util.TimerTask() {

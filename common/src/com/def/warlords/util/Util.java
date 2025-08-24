@@ -24,6 +24,10 @@ public final class Util {
         return random.nextInt(right - left) + left;
     }
 
+    public static boolean isTrue(Boolean value) {
+        return value != null && value;
+    }
+
     public static void fail() {
         assert false;
     }

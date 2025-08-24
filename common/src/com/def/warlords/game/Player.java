@@ -111,7 +111,7 @@ public class Player implements Record {
             final City capital = empire.getCapitalCity();
             final String heroName = controller.getFirstHeroName(capital, kingdom.getRandomHeroName());
             if (heroName == null) {
-                throw new IllegalStateException("Hero name is null");
+                return;
             }
             Util.assertNotNull(capital.hireHero(heroName, false));
             nextHeroOfferTurnCount = MIN_HERO_OFFER_TURN_INTERVAL;
