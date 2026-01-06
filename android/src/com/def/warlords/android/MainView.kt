@@ -20,13 +20,24 @@ import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
 import java.io.InputStream
 
+private const val OFFSET_TOP = 32
+
 class MainView(private val context: Context) : View(context), Platform {
     private val thread = LooperThread()
     private val controller = MainController()
 
-    private val dstRect = Rect()
+    private val dstRect: Rect
     private var backBuffer = Graphics(Dimensions.SCREEN_WIDTH, Dimensions.SCREEN_HEIGHT)
     private var frontBuffer = Graphics(Dimensions.SCREEN_WIDTH, Dimensions.SCREEN_HEIGHT)
+
+    init {
+        val metrics = context.resources.displayMetrics
+        val top = (OFFSET_TOP * metrics.density).toInt()
+        val height = metrics.heightPixels - top
+        val width = height * Dimensions.SCREEN_WIDTH / Dimensions.SCREEN_HEIGHT
+        val left = (metrics.widthPixels - width) / 2
+        dstRect = Rect(left, top, left + width, top + height)
+    }
 
     fun start() {
         PlatformHolder.setPlatform(this)
@@ -80,9 +91,6 @@ class MainView(private val context: Context) : View(context), Platform {
     }
 
     override fun onDraw(canvas: Canvas) {
-        val metrics = context.resources.displayMetrics
-        dstRect.right = metrics.widthPixels
-        dstRect.bottom = metrics.heightPixels
         canvas.drawBitmap(frontBuffer.bitmap, null, dstRect, null)
     }
 
@@ -102,9 +110,8 @@ class MainView(private val context: Context) : View(context), Platform {
 
         @SuppressLint("ClickableViewAccessibility")
         override fun onTouch(v: View, event: MotionEvent): Boolean {
-            val metrics = context.resources.displayMetrics
-            val x = event.x.toInt() * Dimensions.SCREEN_WIDTH / metrics.widthPixels
-            val y = event.y.toInt() * Dimensions.SCREEN_HEIGHT / metrics.heightPixels
+            val x = (event.x.toInt() - dstRect.left) * Dimensions.SCREEN_WIDTH / dstRect.width()
+            val y = (event.y.toInt() - dstRect.top) * Dimensions.SCREEN_HEIGHT / dstRect.height()
             val e = MouseEvent(x, y)
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
