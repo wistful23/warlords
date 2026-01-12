@@ -90,6 +90,10 @@ class MainView(private val context: Context) : View(context), Platform {
         }, delay)
     }
 
+    override fun isVirtualKeyboardRequired(): Boolean {
+        return true
+    }
+
     override fun onDraw(canvas: Canvas) {
         canvas.drawBitmap(frontBuffer.bitmap, null, dstRect, null)
     }

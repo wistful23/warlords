@@ -1,6 +1,8 @@
 package com.def.warlords.control.form;
 
 import com.def.warlords.gui.Container;
+import com.def.warlords.gui.Keyboard;
+import com.def.warlords.platform.PlatformHolder;
 
 import static com.def.warlords.control.common.Dimensions.*;
 
@@ -42,5 +44,12 @@ public class Form extends Container {
     }
 
     void init() {
+    }
+
+    Keyboard addKeyboard() {
+        if (PlatformHolder.getPlatform().isVirtualKeyboardRequired()) {
+            return add(new Keyboard((SCREEN_WIDTH - Keyboard.WIDTH) / 2, SCREEN_HEIGHT - Keyboard.HEIGHT - 2));
+        }
+        return null;
     }
 }

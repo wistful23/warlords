@@ -24,4 +24,6 @@ public interface Platform {
     void stopSecondaryLoop();
 
     void invokeLater(Runnable action, int delay);
+
+    boolean isVirtualKeyboardRequired();
 }

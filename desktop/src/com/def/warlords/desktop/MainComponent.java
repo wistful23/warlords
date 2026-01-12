@@ -108,6 +108,11 @@ public class MainComponent extends JComponent implements Platform {
     }
 
     @Override
+    public boolean isVirtualKeyboardRequired() {
+        return false;
+    }
+
+    @Override
     public void paint(Graphics g) {
         controller.paint(g);
         mouse.paint(g);

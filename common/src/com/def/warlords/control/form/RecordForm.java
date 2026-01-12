@@ -1,9 +1,6 @@
 package com.def.warlords.control.form;
 
-import com.def.warlords.gui.Button;
-import com.def.warlords.gui.GrayPanel;
-import com.def.warlords.gui.InputBox;
-import com.def.warlords.gui.TextButton;
+import com.def.warlords.gui.*;
 import com.def.warlords.util.Util;
 
 /**
@@ -41,6 +38,7 @@ public class RecordForm extends ResultForm<Integer> {
             }
             setResult(null);
         }));
+        final Keyboard keyboard = addKeyboard();
         for (int index = 0; index < initialHeadlines.length; ++index) {
             final int x = index / 4;
             final int y = index % 4;
@@ -48,7 +46,8 @@ public class RecordForm extends ResultForm<Integer> {
                     add(new TextButton(139 + x * 190, 116 + y * 40, " " + (index + 1) + " ", type == RecordType.SAVE));
             final String initialHeadline = initialHeadlines[index];
             final InputBox record = add(new InputBox(187 + x * 190, 118 + y * 40, 125, 15,
-                    initialHeadline != null ? initialHeadline : "not used", controller::createTimer, recordButton,
+                    initialHeadline != null ? initialHeadline : "not used",
+                    controller::createTimer, recordButton, keyboard,
                     source -> {
                         Util.assertTrue(source == currentRecord);
                         if (initialHeadline == null) {

@@ -15,7 +15,7 @@ import java.util.function.Function;
  * @author wistful23
  * @version 1.23
  */
-public class InputBox extends Component {
+public class InputBox extends Container implements Keyboard.Listener {
 
     public interface Listener {
         void editingCanceled(InputBox source);
@@ -28,6 +28,7 @@ public class InputBox extends Component {
     private final int charCount;
     private String text;
     private final Button editButton;
+    private final Keyboard keyboard;
     private final Listener listener;
 
     private final StringBuilder input;
@@ -38,11 +39,12 @@ public class InputBox extends Component {
     private Color cursorColor = Palette.WHITE;
 
     public InputBox(int x, int y, int width, int charCount, String text,
-                    Function<Runnable, Timer> timerCreator, Button editButton, Listener listener) {
+                    Function<Runnable, Timer> timerCreator, Button editButton, Keyboard keyboard, Listener listener) {
         super(x, y, width, font.getHeight() + 6);
         this.charCount = charCount;
         this.text = text;
         this.editButton = editButton;
+        this.keyboard = keyboard;
         this.listener = listener;
         this.input = new StringBuilder(charCount);
         this.cursorTimer = timerCreator.apply(() -> cursorColor = cursorColor == Palette.WHITE ? Palette.BLACK
@@ -77,6 +79,9 @@ public class InputBox extends Component {
         currentIndex = 0;
         editing = true;
         resetCursor();
+        if (keyboard != null) {
+            keyboard.show(this);
+        }
     }
 
     public void commitEditing() {
@@ -91,6 +96,9 @@ public class InputBox extends Component {
         editing = false;
         cursorTimer.stop();
         editButton.release();
+        if (keyboard != null) {
+            keyboard.hide();
+        }
     }
 
     public void cancelEditing() {
@@ -100,6 +108,9 @@ public class InputBox extends Component {
         editing = false;
         cursorTimer.stop();
         editButton.release();
+        if (keyboard != null) {
+            keyboard.hide();
+        }
         if (listener != null) {
             listener.editingCanceled(this);
         }
@@ -129,10 +140,14 @@ public class InputBox extends Component {
 
     @Override
     public void keyPressed(KeyEvent e) {
+        keyPressed(e.getKeyCode(), e.getKeyChar());
+    }
+
+    @Override
+    public void keyPressed(int keyCode, char keyChar) {
         if (!editing) {
             return;
         }
-        final int keyCode = e.getKeyCode();
         if (keyCode == KeyEvent.VK_LEFT) {
             if (currentIndex > 0) {
                 --currentIndex;
@@ -157,7 +172,6 @@ public class InputBox extends Component {
         } else if (keyCode == KeyEvent.VK_ESCAPE) {
             cancelEditing();
         } else {
-            final char keyChar = e.getKeyChar();
             if (keyChar >= ' ' && keyChar <= '~') {
                 input.setCharAt(currentIndex, keyChar);
                 if (currentIndex + 1 < charCount) {
