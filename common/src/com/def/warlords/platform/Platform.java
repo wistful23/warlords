@@ -14,6 +14,8 @@ import java.io.InputStream;
  */
 public interface Platform {
 
+    void exit();
+
     String getAppDirPath();
 
     InputStream getResourceAsStream(String fileName) throws IOException;

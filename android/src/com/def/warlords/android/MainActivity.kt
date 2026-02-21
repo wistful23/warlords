@@ -25,6 +25,6 @@ class MainActivity : ComponentActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        mainView!!.quit()
+        mainView!!.quit(true)
     }
 }

@@ -3,6 +3,7 @@ package com.def.warlords.control.form;
 import com.def.warlords.gui.GrayPanel;
 import com.def.warlords.gui.Label;
 import com.def.warlords.gui.TextButton;
+import com.def.warlords.platform.PlatformHolder;
 
 /**
  * @author wistful23
@@ -18,7 +19,7 @@ public class QuitForm extends Form {
     void init() {
         add(new GrayPanel(42, 84, 292, 172));
         add(new Label(120, 138, "Exit to DOS?"));
-        add(new TextButton(76, 194, " Exit ", source -> System.exit(0)));
+        add(new TextButton(76, 194, " Exit ", source -> PlatformHolder.getPlatform().exit()));
         add(new TextButton(256, 194, "Cancel", source -> deactivate()));
     }
 }

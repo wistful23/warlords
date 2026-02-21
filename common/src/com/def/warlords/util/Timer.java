@@ -6,7 +6,7 @@ package com.def.warlords.util;
  */
 public class Timer {
 
-    private static final java.util.Timer timer = new java.util.Timer();
+    private static java.util.Timer timer;
 
     private final Runnable listener;
 
@@ -17,7 +17,10 @@ public class Timer {
     }
 
     public static void release() {
-        timer.cancel();
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
     }
 
     public void start(int delay) {
@@ -28,6 +31,9 @@ public class Timer {
                 listener.run();
             }
         };
+        if (timer == null) {
+            timer = new java.util.Timer();
+        }
         timer.schedule(timerTask, delay, delay);
     }
 

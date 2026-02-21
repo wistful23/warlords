@@ -7,16 +7,18 @@ internal class LooperThread : Thread() {
     private var listener: Runnable? = null
     private var handler: Handler? = null
 
+    // Must be called once.
     fun start(listener: Runnable) {
         this.listener = listener
         start()
     }
 
+    // Can be called on any thread.
     fun quit() {
         handler!!.looper.quit()
-        join()
     }
 
+    // Must be called on this thread.
     fun startNestedLoop() {
         try {
             Looper.loop()
@@ -24,15 +26,18 @@ internal class LooperThread : Thread() {
         }
     }
 
+    // Must be called on this thread.
     fun stopNestedLoop() {
         // NOTE: We can't call `Looper.quit()` here since it quits the parent loop as well.
         throw StopLoopException()
     }
 
+    // Can be called on any thread.
     fun post(action: Runnable) {
         handler!!.post(action)
     }
 
+    // Can be called on any thread.
     fun postDelayed(action: Runnable, delay: Int) {
         if (delay > 0) {
             handler!!.postDelayed(action, delay.toLong())

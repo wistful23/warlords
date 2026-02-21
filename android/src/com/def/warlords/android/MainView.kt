@@ -8,6 +8,7 @@ import android.graphics.Rect
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
+import androidx.core.graphics.toRectF
 import com.def.warlords.control.MainController
 import com.def.warlords.control.common.Dimensions
 import com.def.warlords.platform.Platform
@@ -29,6 +30,7 @@ class MainView(private val context: Context) : View(context), Platform {
     private val dstRect: Rect
     private var backBuffer = Graphics(Dimensions.SCREEN_WIDTH, Dimensions.SCREEN_HEIGHT)
     private var frontBuffer = Graphics(Dimensions.SCREEN_WIDTH, Dimensions.SCREEN_HEIGHT)
+    private var dosScreen: DosScreen? = null
 
     init {
         val metrics = context.resources.displayMetrics
@@ -48,10 +50,20 @@ class MainView(private val context: Context) : View(context), Platform {
         }
     }
 
-    fun quit() {
+    // If `sync` is true, it waits for `thread` to terminate.
+    fun quit(sync: Boolean) {
+        setOnTouchListener(null)
         thread.quit()
+        if (sync) {
+            thread.join()
+        }
         Timer.release()
         PlatformHolder.setPlatform(null)
+    }
+
+    override fun exit() {
+        quit(false)
+        dosScreen = DosScreen(dstRect.toRectF(), context, this::postInvalidate)
     }
 
     override fun getAppDirPath(): String {
@@ -95,6 +107,10 @@ class MainView(private val context: Context) : View(context), Platform {
     }
 
     override fun onDraw(canvas: Canvas) {
+        dosScreen?.let {
+            dosScreen!!.paint(canvas)
+            return
+        }
         canvas.drawBitmap(frontBuffer.bitmap, null, dstRect, null)
     }
 

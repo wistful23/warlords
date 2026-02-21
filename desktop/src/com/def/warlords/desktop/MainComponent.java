@@ -45,6 +45,11 @@ public class MainComponent extends JComponent implements Platform {
     }
 
     @Override
+    public void exit() {
+        System.exit(0);
+    }
+
+    @Override
     public String getAppDirPath() {
         return ".";
     }
