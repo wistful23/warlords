@@ -24,7 +24,7 @@ public final class Logger {
     }
 
     public static void error(String msg) {
-        System.out.println("[ERR][" + getLocation() + "] " + msg);
+        System.err.println("[ERR][" + getLocation() + "] " + msg);
     }
 
     public static void dev(String msg) {
@@ -32,7 +32,7 @@ public final class Logger {
     }
 
     private static String getLocation() {
-        final StackTraceElement e = Thread.currentThread().getStackTrace()[3];
+        final StackTraceElement e = new Throwable().getStackTrace()[2];
         final String className = e.getClassName();
         return className.substring(className.lastIndexOf('.') + 1) + '.' + e.getMethodName() + ':' + e.getLineNumber();
     }
