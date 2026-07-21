@@ -571,6 +571,9 @@ public class MainController implements FormController, MenuController, GameContr
     }
 
     public void mousePressed(MouseEvent e) {
+        if (computerController.processMouseEvent(e)) {
+            return;
+        }
         if (activeForm != null) {
             activeForm.mousePressed(e);
         } else if (activeContainer != null) {

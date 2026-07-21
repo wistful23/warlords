@@ -6,6 +6,7 @@ import com.def.warlords.game.model.*;
 import com.def.warlords.util.Util;
 
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.util.List;
 
 /**
@@ -27,15 +28,12 @@ public class ComputerController implements PlayerController {
         this.controller = controller;
     }
 
+    public boolean processMouseEvent(MouseEvent e) {
+        return e.getClickCount() > 1 && stop();
+    }
+
     public boolean processKeyEvent(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-            final Game game = controller.getGame();
-            if (game != null && game.isComputerMode()) {
-                stopComputerMode = true;
-                return true;
-            }
-        }
-        return false;
+        return e.getKeyCode() == KeyEvent.VK_ESCAPE && stop();
     }
 
     @Override
@@ -245,5 +243,14 @@ public class ComputerController implements PlayerController {
         }
         controller.enableActiveContainer();
         controller.endTurn();
+    }
+
+    private boolean stop() {
+        final Game game = controller.getGame();
+        if (game != null && game.isComputerMode()) {
+            stopComputerMode = true;
+            return true;
+        }
+        return false;
     }
 }
