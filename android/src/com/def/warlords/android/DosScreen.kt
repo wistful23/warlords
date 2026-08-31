@@ -22,10 +22,13 @@ class DosScreen(private val dstRect: RectF, context: Context, repaint: Runnable)
     }
 
     fun paint(canvas: Canvas) {
-        canvas.drawText("Warlords Version 2.10  (c) Strategic Studies Group", dstRect.left, dstRect.top, fontPaint)
+        canvas.drawText(
+            "Warlords Version 2.10  (c) Strategic Studies Group",
+            dstRect.left, dstRect.top + TEXT_SIZE, fontPaint
+        )
         canvas.drawText(
             "C:/GAMES/WARLORDS>" + if (showCursor) "_" else "",
-            dstRect.left, dstRect.top + TEXT_SIZE * 2, fontPaint
+            dstRect.left, dstRect.top + TEXT_SIZE * 3, fontPaint
         )
     }
 }

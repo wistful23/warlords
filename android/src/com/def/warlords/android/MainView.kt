@@ -108,7 +108,7 @@ class MainView(private val context: Context) : View(context), Platform {
 
     override fun onDraw(canvas: Canvas) {
         dosScreen?.let {
-            dosScreen!!.paint(canvas)
+            it.paint(canvas)
             return
         }
         canvas.drawBitmap(frontBuffer.bitmap, null, dstRect, null)
