@@ -5,6 +5,7 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Rect
+import android.os.SystemClock
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
@@ -23,6 +24,10 @@ import java.io.InputStream
 
 private const val OFFSET_TOP = 32
 
+private const val MIN_PAINT_INTERVAL_MS = 30L
+
+private const val PAINT_SCHEDULED = -1L
+
 class MainView(private val context: Context) : View(context), Platform {
     private val thread = LooperThread()
     private val controller = MainController()
@@ -31,6 +36,30 @@ class MainView(private val context: Context) : View(context), Platform {
     private var backBuffer = Graphics(Dimensions.SCREEN_WIDTH, Dimensions.SCREEN_HEIGHT)
     private var frontBuffer = Graphics(Dimensions.SCREEN_WIDTH, Dimensions.SCREEN_HEIGHT)
     private var dosScreen: DosScreen? = null
+
+    private var lastPaintTime = 0L
+
+    private val paint = Runnable {
+        lastPaintTime = SystemClock.uptimeMillis()
+        controller.paint(backBuffer)
+        // Swap the buffers.
+        frontBuffer = backBuffer.also { backBuffer = frontBuffer }
+        // Enqueue `View.onDraw()`.
+        postInvalidate()
+    }
+
+    private val schedulePaint = Runnable {
+        if (lastPaintTime == PAINT_SCHEDULED) {
+            return@Runnable
+        }
+        val elapsed = SystemClock.uptimeMillis() - lastPaintTime
+        if (elapsed >= MIN_PAINT_INTERVAL_MS) {
+            paint.run()
+        } else {
+            lastPaintTime = PAINT_SCHEDULED
+            thread.postDelayed(paint, (MIN_PAINT_INTERVAL_MS - elapsed).toInt())
+        }
+    }
 
     init {
         val metrics = context.resources.displayMetrics
@@ -115,17 +144,11 @@ class MainView(private val context: Context) : View(context), Platform {
     }
 
     private fun repaint() {
-        thread.post {
-            controller.paint(backBuffer)
-            // Swap the buffers.
-            frontBuffer = backBuffer.also { backBuffer = frontBuffer }
-            // Enqueue `View.onDraw()`.
-            postInvalidate()
-        }
+        thread.post(schedulePaint)
     }
 
     private inner class Mouse : OnTouchListener {
-        private var lastUpEventTime: Long = 0
+        private var lastUpEventTime = 0L
         private var clickCount = 0
 
         @SuppressLint("ClickableViewAccessibility")
@@ -135,7 +158,7 @@ class MainView(private val context: Context) : View(context), Platform {
             val e = MouseEvent(x, y)
             when (event.actionMasked) {
                 MotionEvent.ACTION_DOWN -> {
-                    if (System.currentTimeMillis() - lastUpEventTime < ViewConfiguration.getDoubleTapTimeout()) {
+                    if (SystemClock.uptimeMillis() - lastUpEventTime < ViewConfiguration.getDoubleTapTimeout()) {
                         ++clickCount
                     } else {
                         clickCount = 1
@@ -145,7 +168,7 @@ class MainView(private val context: Context) : View(context), Platform {
                 }
 
                 MotionEvent.ACTION_UP -> {
-                    lastUpEventTime = System.currentTimeMillis()
+                    lastUpEventTime = SystemClock.uptimeMillis()
                     thread.post { controller.mouseReleased(e) }
                 }
 
