@@ -24,6 +24,10 @@ public final class Util {
         return random.nextInt(right - left) + left;
     }
 
+    public static long uptimeMillis() {
+        return System.nanoTime() / 1_000_000;
+    }
+
     public static boolean isTrue(Boolean value) {
         return value != null && value;
     }

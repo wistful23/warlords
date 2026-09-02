@@ -4,6 +4,7 @@ import com.def.warlords.control.MainController;
 import com.def.warlords.platform.Platform;
 import com.def.warlords.platform.PlatformHolder;
 import com.def.warlords.sound.Sound;
+import com.def.warlords.util.Util;
 
 import javax.imageio.ImageIO;
 import javax.swing.JComponent;
@@ -125,10 +126,14 @@ public class MainComponent extends JComponent implements Platform {
 
     private final class Mouse extends MouseAdapter {
 
+        private static final long MIN_PAINT_INTERVAL_MS = 16;
+
         private static final int BUTTON_DOWN_MASK =
                 MouseEvent.BUTTON1_DOWN_MASK | MouseEvent.BUTTON2_DOWN_MASK | MouseEvent.BUTTON3_DOWN_MASK;
 
         private MouseEvent e;
+
+        private long lastPaintTime = 0;
 
         private Mouse() {
             final BufferedImage emptyImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
@@ -178,15 +183,23 @@ public class MainComponent extends JComponent implements Platform {
 
         @Override
         public void mouseDragged(MouseEvent e) {
-            repaint();
+            repaintOnMove();
             this.e = e;
             controller.mouseDragged(e);
         }
 
         @Override
         public void mouseMoved(MouseEvent e) {
-            repaint();
+            repaintOnMove();
             this.e = e;
+        }
+
+        private void repaintOnMove() {
+            final long now = Util.uptimeMillis();
+            if (now - lastPaintTime >= MIN_PAINT_INTERVAL_MS) {
+                lastPaintTime = now;
+                repaint();
+            }
         }
     }
 
