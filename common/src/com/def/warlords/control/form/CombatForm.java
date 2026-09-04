@@ -152,7 +152,7 @@ public class CombatForm extends Form {
     }
 
     private void nextRound(int roundIndex) {
-        if (roundIndex != currentRoundIndex || System.currentTimeMillis() - lastRoundTime < DELAY_AFTER_ROUND) {
+        if (roundIndex != currentRoundIndex || Util.uptimeMillis() - lastRoundTime < DELAY_AFTER_ROUND) {
             return;
         }
         if (removeArmy != null) {
@@ -207,7 +207,7 @@ public class CombatForm extends Form {
             Util.fail();
         }
         ++currentRoundIndex;
-        lastRoundTime = System.currentTimeMillis();
+        lastRoundTime = Util.uptimeMillis();
     }
 
     private boolean findTerrainAround(Tile tile, TerrainType terrain) {
