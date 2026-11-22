@@ -107,7 +107,7 @@ public class ArmyDelivery implements Record {
         if (empire == null && army.getEmpire() != null) {
             return false;
         }
-        // Can't delivery a hero.
+        // Can't deliver a hero.
         if (army.isHero()) {
             return false;
         }
