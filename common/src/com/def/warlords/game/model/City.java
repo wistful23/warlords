@@ -340,7 +340,8 @@ public class City implements Record, Locatable, Comparable<City> {
     // Returns false if the army is not located for some reason.
     public boolean locate(Army army) {
         if (empire == null) {
-            throw new IllegalStateException("City is not registered in an empire");
+            Logger.info("City is razed");
+            return false;
         }
         final Empire armyEmpire = army.getEmpire();
         if (armyEmpire == null) {
